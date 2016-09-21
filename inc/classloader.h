@@ -8,13 +8,6 @@
 #include "vm_object.h"
 #include "vm_constants.h"
 
-/*
-class vmInterfaceList
-{
-    std::vector<vmObject*> items;
-};
-*/
-
 class vmFieldInfo
 {
 };
@@ -41,7 +34,6 @@ public:
 
     uint16_t constant_pool_count;
 
-    //cp_info constant_pool[constant_pool_count - 1];
     std::vector<vmConstantInfo*> constant_pool;
 
     uint16_t access_flags;
@@ -66,7 +58,8 @@ public:
 
 private:
     uint8_t *m_block;
+    uint32_t m_pos;
     bool parseCafebabe();
-    void parseVersions();
-    void parseConstantPool();
+    uint32_t parseVersions(uint32_t);
+    uint32_t parseConstantPool(uint32_t);
 };

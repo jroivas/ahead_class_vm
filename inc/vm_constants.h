@@ -92,3 +92,16 @@ public:
     uint16_t length;
     uint8_t *bytes;
 };
+
+class vmConstantNameAndType : public vmConstantInfo
+{
+public:
+    vmConstantNameAndType(vmConstants tag, uint16_t v, uint16_t d) : vmConstantInfo(tag)
+    {
+        index = v;
+        descriptor = v;
+        size = 5;
+    }
+    uint16_t index;
+    uint16_t descriptor;
+};

@@ -7,7 +7,7 @@ vmConstantInfo *vmConstantInfo::parse(uint8_t *p)
 {
     if (!p) return nullptr;
     vmConstants tag = (vmConstants)*p;
-    std::cout << "Const " << (uint32_t)tag << "\n";
+    //std::cout << "Const " << (uint32_t)tag << "\n";
 
     switch (tag) {
         case C_Utf8:
@@ -45,7 +45,10 @@ vmConstantInfo *vmConstantInfo::parse(uint8_t *p)
                 ntohs(*(uint16_t*)(p + 3))
             );
         case C_NameAndType:
-            break;
+            return new vmConstantNameAndType(tag,
+                ntohs(*(uint16_t*)(p + 1)),
+                ntohs(*(uint16_t*)(p + 3))
+            );
         case C_MethodHandle:
             break;
         case C_MethodType:

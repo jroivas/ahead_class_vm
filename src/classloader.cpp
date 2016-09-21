@@ -30,8 +30,9 @@ bool vmClassFile::readFromFile(std::string fname)
 bool vmClassFile::parse()
 {
     if (!parseCafebabe()) return false;
-    parseVersions();
-    parseConstantPool();
+    m_pos = 4;
+    m_pos = parseVersions(m_pos);
+    m_pos = parseConstantPool(m_pos);
 
     return true;
 }
@@ -51,17 +52,21 @@ bool vmClassFile::parseCafebabe()
     return true;
 }
 
-void vmClassFile::parseVersions()
+uint32_t vmClassFile::parseVersions(uint32_t pos)
 {
-    minor_version = ntohs(*(uint16_t*)(m_block + 4));
-    major_version = ntohs(*(uint16_t*)(m_block + 6));
+    minor_version = ntohs(*(uint16_t*)(m_block + pos));
+    pos += 2;
+    major_version = ntohs(*(uint16_t*)(m_block + pos));
+    pos += 2;
+
+    return pos;
 }
 
-void vmClassFile::parseConstantPool()
+uint32_t vmClassFile::parseConstantPool(uint32_t pos)
 {
-    constant_pool_count = ntohs(*(uint16_t*)(m_block + 8));
-    uint32_t pos = 10;
-    for (uint16_t i = 0; i < constant_pool_count; ++i) {
+    constant_pool_count = ntohs(*(uint16_t*)(m_block + pos));
+    pos += 2;
+    for (uint16_t i = 0; i < constant_pool_count - 1; ++i) {
         vmConstantInfo *res = vmConstantInfo::parse(m_block + pos);
         if (res == nullptr) {
             std::cout << " Invalid constant at " << i << "\n";
@@ -71,4 +76,5 @@ void vmClassFile::parseConstantPool()
         }
         pos += res->size;
     }
+    return pos;
 }
