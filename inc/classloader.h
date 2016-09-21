@@ -8,12 +8,10 @@
 #include "vm_object.h"
 #include "vm_constants.h"
 #include "vm_methods.h"
+#include "vm_attributes.h"
+#include "vm_fields.h"
 
 class vmInterfaceInfo
-{
-};
-
-class vmFieldInfo
 {
 };
 
@@ -65,4 +63,5 @@ private:
     void parseInterfaces();
     void parseFields();
     void parseMethods();
+    void parseAttributes();
 };

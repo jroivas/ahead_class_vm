@@ -1,18 +1,9 @@
-#include "vm_methods.h"
-#include <iostream>
+#include "vm_fields.h"
 #include <arpa/inet.h>
 
-vmMethodInfo::vmMethodInfo()
-    : access_flags(0),
-    name_index(0),
-    desc_index(0),
-    attributes_count(0)
+vmFieldInfo *vmFieldInfo::parse(uint8_t *p)
 {
-}
-
-vmMethodInfo *vmMethodInfo::parse(uint8_t *p)
-{
-    vmMethodInfo *res = new vmMethodInfo();
+    vmFieldInfo *res = new vmFieldInfo();
     res->access_flags = ntohs(*(uint16_t*)(p + 0));
     res->name_index = ntohs(*(uint16_t*)(p + 2));
     res->desc_index = ntohs(*(uint16_t*)(p + 4));
@@ -23,5 +14,6 @@ vmMethodInfo *vmMethodInfo::parse(uint8_t *p)
         res->attributes.push_back(dd);
         res->size += dd->size;
     }
+
     return res;
 }

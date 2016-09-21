@@ -17,10 +17,11 @@ bool vmClassFile::readFromFile(std::string fname)
     if (!cfile.is_open()) return false;
 
     cfile.seekg(0, std::ios::end);
-    std::streampos size = cfile.tellg();
+    //std::streampos size = cfile.tellg();
+    uint64_t size = cfile.tellg();
     cfile.seekg (0, std::ios::beg);
 
-    m_block = new uint8_t [size];
+    m_block = new uint8_t [size + 1];
     cfile.read((char*)m_block, size);
 
     cfile.close();
@@ -39,6 +40,8 @@ bool vmClassFile::parse()
     parseInterfaces();
     parseFields();
     parseMethods();
+    parseAttributes();
+    std::cout << "PO " << m_pos << "\n";
 
     return true;
 }
@@ -99,7 +102,7 @@ void vmClassFile::parseInterfaces()
     uint32_t pos = m_pos;
     interfaces_count = ntohs(*(uint16_t*)(m_block + pos));
     pos += 2;
-    for (uint16_t i = 0; i < interfaces_count - 1; ++i) {
+    for (uint16_t i = 0; i < interfaces_count; ++i) {
         // FIXME
         std::cout <<  "Unknown interface at " << i << "\n";
         throw "Unknown interface";
@@ -112,10 +115,23 @@ void vmClassFile::parseFields()
     uint32_t pos = m_pos;
     fields_count = ntohs(*(uint16_t*)(m_block + pos));
     pos += 2;
-    for (uint16_t i = 0; i < fields_count - 1; ++i) {
-        // FIXME
-        std::cout <<  "Unknown field at " << i << "\n";
-        throw "Unknown field";
+    for (uint16_t i = 0; i < fields_count; ++i) {
+        vmFieldInfo *res = vmFieldInfo::parse(m_block + pos);
+        if (res == nullptr) {
+            std::cout <<  "Unknown field at " << i << "\n";
+            throw "Unknown field";
+        } else {
+            fields.push_back(res);
+        }
+        /*
+        std::cout << " IDX " << res->name_index << " CNT " << constant_pool.size() << "\n";
+        std::cout << " DDX " << res->desc_index << "\n";
+        std::cout << " ac  " << res->attributes_count << "\n";
+        std::cout << " FF " << ((vmConstantUtf8*)(constant_pool[res->name_index]))->bytes << "\n";
+        std::cout << " DESC   " << ((vmConstantUtf8*)(constant_pool[res->desc_index]))->bytes << "\n";
+        */
+        pos += res->size;
+        //std::cout << "PP " << pos << "\n";
     }
     m_pos = pos;
 }
@@ -125,13 +141,56 @@ void vmClassFile::parseMethods()
     uint32_t pos = m_pos;
     methods_count = ntohs(*(uint16_t*)(m_block + pos));
     pos += 2;
-    for (uint16_t i = 0; i < methods_count - 1; ++i) {
+    for (uint16_t i = 0; i < methods_count; ++i) {
         vmMethodInfo *res = vmMethodInfo::parse(m_block + pos);
         if (res == nullptr) {
             std::cout <<  "Unknown method at " << i << "\n";
             throw "Unknown method";
         } else {
             methods.push_back(res);
+        }
+        std::cout << " METHOD " << ((vmConstantUtf8*)(constant_pool[res->name_index]))->bytes << "\n";
+        vmConstantInfo *ci = constant_pool[res->desc_index];
+        vmConstantUtf8 *d = dynamic_cast<vmConstantUtf8*>(ci);
+        if (d) {
+            std::cout << " DESC   " << ((vmConstantUtf8*)(constant_pool[res->desc_index]))->bytes << "\n";
+        }
+        /*
+        std::cout << " IDX " << res->name_index << " CNT " << constant_pool.size() << "\n";
+        std::cout << " DDX " << res->desc_index << "\n";
+        std::cout << " ac  " << res->attributes_count << "\n";
+        vmConstantUtf8* mn = dynamic_cast<vmConstantUtf8*>(constant_pool[res->name_index]);
+        if (mn) {
+            std::cout << " METHOD " << ((vmConstantUtf8*)(constant_pool[res->name_index]))->bytes << "\n";
+        } else {
+            std::cout << " METHOD nnn\n";
+        }
+        vmConstantInfo *ci = constant_pool[res->desc_index];
+        vmConstantUtf8 *d = dynamic_cast<vmConstantUtf8*>(ci);
+        if (d) {
+            std::cout << " DESC   " << ((vmConstantUtf8*)(constant_pool[res->desc_index]))->bytes << "\n";
+        } else {
+            std::cout << " DESC null\n";
+        }
+        */
+        pos += res->size;
+        //std::cout << "PM " << pos << "\n";
+    }
+    m_pos = pos;
+}
+
+void vmClassFile::parseAttributes()
+{
+    uint32_t pos = m_pos;
+    attributes_count = ntohs(*(uint16_t*)(m_block + pos));
+    pos += 2;
+    for (uint16_t i = 0; i < attributes_count; ++i) {
+        vmAttributeInfo *res = vmAttributeInfo::parse(m_block + pos);
+        if (res == nullptr) {
+            std::cout <<  "Unknown attribute at " << i << "\n";
+            throw "Unknown attribute";
+        } else {
+            attributes.push_back(res);
         }
         pos += res->size;
     }

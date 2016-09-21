@@ -25,6 +25,7 @@ protected:
     vmConstantInfo(vmConstants tag) {}
 
 public:
+    virtual ~vmConstantInfo() {}
     vmConstants tag;
     uint32_t size;
 

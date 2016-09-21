@@ -19,6 +19,7 @@ int main(int argc, char **argv)
     std::cout << "Interfaces " << m.interfaces_count << "\n";
     std::cout << "Fields " << m.fields_count << "\n";
     std::cout << "Methods " << m.methods_count << "\n";
+    std::cout << "Attrib " << m.attributes_count << "\n";
 
     return 0;
 }

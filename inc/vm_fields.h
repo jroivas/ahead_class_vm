@@ -4,19 +4,17 @@
 #include <cstdint>
 #include "vm_attributes.h"
 
-class vmMethodInfo
+class vmFieldInfo
 {
 protected:
-    vmMethodInfo();
-
+    vmFieldInfo() {}
 public:
-    static vmMethodInfo *parse(uint8_t *p);
-    void mapAttributes(std::vector<vmAttributeInfo*> *attribs);
+    static vmFieldInfo *parse(uint8_t *p);
 
     uint16_t access_flags;
     uint16_t name_index;
     uint16_t desc_index;
     uint16_t attributes_count;
     std::vector<vmAttributeInfo*> attributes;
-    uint32_t size;
+    uint16_t size;
 };
