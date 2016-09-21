@@ -65,4 +65,6 @@ private:
     void parseAccessFlags();
     void parseThis();
     void parseSuper();
+    void parseInterfaces();
+    void parseFields();
 };

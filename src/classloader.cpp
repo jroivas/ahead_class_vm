@@ -36,6 +36,8 @@ bool vmClassFile::parse()
     parseAccessFlags();
     parseThis();
     parseSuper();
+    parseInterfaces();
+    parseFields();
 
     return true;
 }
@@ -89,4 +91,30 @@ void vmClassFile::parseSuper()
 {
     super_class = ntohs(*(uint16_t*)(m_block + m_pos));
     m_pos += 2;
+}
+
+void vmClassFile::parseInterfaces()
+{
+    uint32_t pos = m_pos;
+    interfaces_count = ntohs(*(uint16_t*)(m_block + pos));
+    pos += 2;
+    for (uint16_t i = 0; i < interfaces_count  - 1; ++i) {
+        // FIXME
+        std::cout <<  "Unknown interface at" << i << "\n";
+        throw "Unknown interface";
+    }
+    m_pos = pos;
+}
+
+void vmClassFile::parseFields()
+{
+    uint32_t pos = m_pos;
+    fields_count = ntohs(*(uint16_t*)(m_block + pos));
+    pos += 2;
+    for (uint16_t i = 0; i < fields_count  - 1; ++i) {
+        // FIXME
+        std::cout <<  "Unknown field at" << i << "\n";
+        throw "Unknown field";
+    }
+    m_pos = pos;
 }
