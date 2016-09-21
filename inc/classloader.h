@@ -64,4 +64,5 @@ private:
     void parseConstantPool();
     void parseAccessFlags();
     void parseThis();
+    void parseSuper();
 };

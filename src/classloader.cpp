@@ -34,6 +34,8 @@ bool vmClassFile::parse()
     parseVersions();
     parseConstantPool();
     parseAccessFlags();
+    parseThis();
+    parseSuper();
 
     return true;
 }
@@ -79,6 +81,12 @@ void vmClassFile::parseAccessFlags()
 
 void vmClassFile::parseThis()
 {
-    access_flags = ntohs(*(uint16_t*)(m_block + m_pos));
+    this_class = ntohs(*(uint16_t*)(m_block + m_pos));
+    m_pos += 2;
+}
+
+void vmClassFile::parseSuper()
+{
+    super_class = ntohs(*(uint16_t*)(m_block + m_pos));
     m_pos += 2;
 }
