@@ -1,6 +1,7 @@
 ahead_class_vm = executable('ahead_class_vm',
     sources: [
         'classloader.cpp',
+        'vm_constants.cpp',
         'main.cpp'
     ],
     include_directories: [

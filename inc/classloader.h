@@ -6,10 +6,7 @@
 #include <cstdint>
 
 #include "vm_object.h"
-
-class vmConstantInfo
-{
-};
+#include "vm_constants.h"
 
 /*
 class vmInterfaceList
@@ -45,7 +42,7 @@ public:
     uint16_t constant_pool_count;
 
     //cp_info constant_pool[constant_pool_count - 1];
-    std::vector<vmConstantInfo> constant_pool;
+    std::vector<vmConstantInfo*> constant_pool;
 
     uint16_t access_flags;
 
@@ -65,6 +62,11 @@ public:
     uint16_t attributes_count;
     std::vector<vmAttributeInfo> attributes;
 
+    bool parse();
+
 private:
-    char *m_block;
+    uint8_t *m_block;
+    bool parseCafebabe();
+    void parseVersions();
+    void parseConstantPool();
 };
