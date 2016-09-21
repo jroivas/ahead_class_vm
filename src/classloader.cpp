@@ -41,7 +41,6 @@ bool vmClassFile::parse()
     parseFields();
     parseMethods();
     parseAttributes();
-    std::cout << "PO " << m_pos << "\n";
 
     return true;
 }
@@ -66,6 +65,7 @@ void vmClassFile::parseConstantPool()
     uint32_t pos = m_pos;
     constant_pool_count = ntohs(*(uint16_t*)(m_block + pos));
     pos += 2;
+    constant_pool.push_back(nullptr);
     for (uint16_t i = 0; i < constant_pool_count - 1; ++i) {
         vmConstantInfo *res = vmConstantInfo::parse(m_block + pos);
         if (res == nullptr) {
@@ -149,14 +149,14 @@ void vmClassFile::parseMethods()
         } else {
             methods.push_back(res);
         }
+        /*
         std::cout << " METHOD " << ((vmConstantUtf8*)(constant_pool[res->name_index]))->bytes << "\n";
         vmConstantInfo *ci = constant_pool[res->desc_index];
         vmConstantUtf8 *d = dynamic_cast<vmConstantUtf8*>(ci);
         if (d) {
             std::cout << " DESC   " << ((vmConstantUtf8*)(constant_pool[res->desc_index]))->bytes << "\n";
         }
-        /*
-        std::cout << " IDX " << res->name_index << " CNT " << constant_pool.size() << "\n";
+        std::cout << " IDX " << res->name_index << "\n";
         std::cout << " DDX " << res->desc_index << "\n";
         std::cout << " ac  " << res->attributes_count << "\n";
         vmConstantUtf8* mn = dynamic_cast<vmConstantUtf8*>(constant_pool[res->name_index]);
