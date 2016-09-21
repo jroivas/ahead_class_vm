@@ -9,7 +9,6 @@ vmConstantInfo *vmConstantInfo::parse(uint8_t *p)
 {
     if (!p) return nullptr;
     vmConstants tag = (vmConstants)*p;
-    //std::cout << "Const " << (uint32_t)tag << "\n";
 
     switch (tag) {
         case C_Utf8:

@@ -17,7 +17,6 @@ bool vmClassFile::readFromFile(std::string fname)
     if (!cfile.is_open()) return false;
 
     cfile.seekg(0, std::ios::end);
-    //std::streampos size = cfile.tellg();
     uint64_t size = cfile.tellg();
     cfile.seekg (0, std::ios::beg);
 
@@ -123,15 +122,7 @@ void vmClassFile::parseFields()
         } else {
             fields.push_back(res);
         }
-        /*
-        std::cout << " IDX " << res->name_index << " CNT " << constant_pool.size() << "\n";
-        std::cout << " DDX " << res->desc_index << "\n";
-        std::cout << " ac  " << res->attributes_count << "\n";
-        std::cout << " FF " << ((vmConstantUtf8*)(constant_pool[res->name_index]))->bytes << "\n";
-        std::cout << " DESC   " << ((vmConstantUtf8*)(constant_pool[res->desc_index]))->bytes << "\n";
-        */
         pos += res->size;
-        //std::cout << "PP " << pos << "\n";
     }
     m_pos = pos;
 }
@@ -149,32 +140,7 @@ void vmClassFile::parseMethods()
         } else {
             methods.push_back(res);
         }
-        /*
-        std::cout << " METHOD " << ((vmConstantUtf8*)(constant_pool[res->name_index]))->bytes << "\n";
-        vmConstantInfo *ci = constant_pool[res->desc_index];
-        vmConstantUtf8 *d = dynamic_cast<vmConstantUtf8*>(ci);
-        if (d) {
-            std::cout << " DESC   " << ((vmConstantUtf8*)(constant_pool[res->desc_index]))->bytes << "\n";
-        }
-        std::cout << " IDX " << res->name_index << "\n";
-        std::cout << " DDX " << res->desc_index << "\n";
-        std::cout << " ac  " << res->attributes_count << "\n";
-        vmConstantUtf8* mn = dynamic_cast<vmConstantUtf8*>(constant_pool[res->name_index]);
-        if (mn) {
-            std::cout << " METHOD " << ((vmConstantUtf8*)(constant_pool[res->name_index]))->bytes << "\n";
-        } else {
-            std::cout << " METHOD nnn\n";
-        }
-        vmConstantInfo *ci = constant_pool[res->desc_index];
-        vmConstantUtf8 *d = dynamic_cast<vmConstantUtf8*>(ci);
-        if (d) {
-            std::cout << " DESC   " << ((vmConstantUtf8*)(constant_pool[res->desc_index]))->bytes << "\n";
-        } else {
-            std::cout << " DESC null\n";
-        }
-        */
         pos += res->size;
-        //std::cout << "PM " << pos << "\n";
     }
     m_pos = pos;
 }

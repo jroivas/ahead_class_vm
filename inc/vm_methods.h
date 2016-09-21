@@ -11,7 +11,6 @@ protected:
 
 public:
     static vmMethodInfo *parse(uint8_t *p);
-    void mapAttributes(std::vector<vmAttributeInfo*> *attribs);
 
     uint16_t access_flags;
     uint16_t name_index;
