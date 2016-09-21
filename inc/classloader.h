@@ -7,16 +7,13 @@
 
 #include "vm_object.h"
 #include "vm_constants.h"
+#include "vm_methods.h"
+
+class vmInterfaceInfo
+{
+};
 
 class vmFieldInfo
-{
-};
-
-class vmMethodInfo
-{
-};
-
-class vmAttributeInfo
 {
 };
 
@@ -43,16 +40,16 @@ public:
 
     uint16_t interfaces_count;
 
-    std::vector<uint16_t> interfaces;
+    std::vector<vmInterfaceInfo*> interfaces;
 
     uint16_t fields_count;
-    std::vector<vmFieldInfo> fields;
+    std::vector<vmFieldInfo*> fields;
 
     uint16_t methods_count;
-    std::vector<vmFieldInfo> methods;
+    std::vector<vmMethodInfo*> methods;
 
     uint16_t attributes_count;
-    std::vector<vmAttributeInfo> attributes;
+    std::vector<vmAttributeInfo*> attributes;
 
     bool parse();
 

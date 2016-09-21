@@ -126,9 +126,14 @@ void vmClassFile::parseMethods()
     methods_count = ntohs(*(uint16_t*)(m_block + pos));
     pos += 2;
     for (uint16_t i = 0; i < methods_count - 1; ++i) {
-        // FIXME
-        std::cout <<  "Unknown method at " << i << "\n";
-        throw "Unknown method";
+        vmMethodInfo *res = vmMethodInfo::parse(m_block + pos);
+        if (res == nullptr) {
+            std::cout <<  "Unknown method at " << i << "\n";
+            throw "Unknown method";
+        } else {
+            methods.push_back(res);
+        }
+        pos += res->size;
     }
     m_pos = pos;
 }
