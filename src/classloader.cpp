@@ -38,6 +38,7 @@ bool vmClassFile::parse()
     parseSuper();
     parseInterfaces();
     parseFields();
+    parseMethods();
 
     return true;
 }
@@ -98,9 +99,9 @@ void vmClassFile::parseInterfaces()
     uint32_t pos = m_pos;
     interfaces_count = ntohs(*(uint16_t*)(m_block + pos));
     pos += 2;
-    for (uint16_t i = 0; i < interfaces_count  - 1; ++i) {
+    for (uint16_t i = 0; i < interfaces_count - 1; ++i) {
         // FIXME
-        std::cout <<  "Unknown interface at" << i << "\n";
+        std::cout <<  "Unknown interface at " << i << "\n";
         throw "Unknown interface";
     }
     m_pos = pos;
@@ -111,10 +112,23 @@ void vmClassFile::parseFields()
     uint32_t pos = m_pos;
     fields_count = ntohs(*(uint16_t*)(m_block + pos));
     pos += 2;
-    for (uint16_t i = 0; i < fields_count  - 1; ++i) {
+    for (uint16_t i = 0; i < fields_count - 1; ++i) {
         // FIXME
-        std::cout <<  "Unknown field at" << i << "\n";
+        std::cout <<  "Unknown field at " << i << "\n";
         throw "Unknown field";
+    }
+    m_pos = pos;
+}
+
+void vmClassFile::parseMethods()
+{
+    uint32_t pos = m_pos;
+    methods_count = ntohs(*(uint16_t*)(m_block + pos));
+    pos += 2;
+    for (uint16_t i = 0; i < methods_count - 1; ++i) {
+        // FIXME
+        std::cout <<  "Unknown method at " << i << "\n";
+        throw "Unknown method";
     }
     m_pos = pos;
 }

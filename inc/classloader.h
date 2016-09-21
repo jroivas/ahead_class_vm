@@ -67,4 +67,5 @@ private:
     void parseSuper();
     void parseInterfaces();
     void parseFields();
+    void parseMethods();
 };
