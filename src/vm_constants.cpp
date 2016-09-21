@@ -1,7 +1,9 @@
 #include "vm_constants.h"
-#include <arpa/inet.h>
 #include <iostream>
 #include <cstring>
+
+#include <arpa/inet.h>
+#include <endian.h>
 
 vmConstantInfo *vmConstantInfo::parse(uint8_t *p)
 {
@@ -16,13 +18,21 @@ vmConstantInfo *vmConstantInfo::parse(uint8_t *p)
                 (const uint8_t*)(p + 3)
             );
         case C_Integer:
-            break;
+            return new vmConstantInteger(tag,
+                ntohl(*(uint32_t*)(p + 1))
+            );
         case C_Float:
-            break;
+            return new vmConstantFloat(tag,
+                ntohl(*(uint32_t*)(p + 1))
+            );
         case C_Long:
-            break;
+            return new vmConstantLong(tag,
+                be64toh(*(uint64_t*)(p + 1))
+            );
         case C_Double:
-            break;
+            return new vmConstantDouble(tag,
+                be64toh(*(uint64_t*)(p + 1))
+            );
         case C_Class:
             return new vmConstantClass(tag, ntohs(*(uint16_t*)(p + 1)));
         case C_String:
@@ -56,9 +66,10 @@ vmConstantInfo *vmConstantInfo::parse(uint8_t *p)
         case C_InvokeDynamic:
             break;
         default:
-            std::cout << "Invalid constant info\n";
+            std::cout << "Invalid constant info: " << tag << "\n";
             throw "Invalid constant info";
     }
+    std::cout << "Unimplemented constant info: " << tag << "\n";
     return nullptr;
 }
 

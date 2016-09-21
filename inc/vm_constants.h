@@ -105,3 +105,47 @@ public:
     uint16_t index;
     uint16_t descriptor;
 };
+
+class vmConstantInteger : public vmConstantInfo
+{
+public:
+    vmConstantInteger(vmConstants tag, uint32_t v) : vmConstantInfo(tag)
+    {
+        val = v;
+        size = 5;
+    }
+    uint32_t val;
+};
+
+class vmConstantFloat : public vmConstantInfo
+{
+public:
+    vmConstantFloat(vmConstants tag, uint32_t v) : vmConstantInfo(tag)
+    {
+        val = (float)v;
+        size = 5;
+    }
+    float val;
+};
+
+class vmConstantLong : public vmConstantInfo
+{
+public:
+    vmConstantLong(vmConstants tag, uint64_t v) : vmConstantInfo(tag)
+    {
+        val = v;
+        size = 9;
+    }
+    uint64_t val;
+};
+
+class vmConstantDouble : public vmConstantInfo
+{
+public:
+    vmConstantDouble(vmConstants tag, uint64_t v) : vmConstantInfo(tag)
+    {
+        val = (double)v;
+        size = 9;
+    }
+    double val;
+};
