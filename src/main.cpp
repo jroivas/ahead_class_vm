@@ -10,8 +10,10 @@ int main(int argc, char **argv)
 
     vmClassFile m(argv[1]);
 
-    std::cout << "Parse? " << (m.parse()? "ok" :"fail") << "\n";
+    bool ok = m.parse();
+    std::cout << "Parse? " << (ok ? "ok" :"fail") << "\n";
     std::cout << "Version " << m.major_version << " " << m.minor_version << "\n";
+    std::cout << "Access flags " << m.access_flags << "\n";
 
     return 0;
 }

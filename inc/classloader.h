@@ -60,6 +60,8 @@ private:
     uint8_t *m_block;
     uint32_t m_pos;
     bool parseCafebabe();
-    uint32_t parseVersions(uint32_t);
-    uint32_t parseConstantPool(uint32_t);
+    void parseVersions();
+    void parseConstantPool();
+    void parseAccessFlags();
+    void parseThis();
 };

@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 
 vmClassFile::vmClassFile(std::string fname)
+    : m_pos(0)
 {
     readFromFile(fname);
 }
@@ -30,9 +31,9 @@ bool vmClassFile::readFromFile(std::string fname)
 bool vmClassFile::parse()
 {
     if (!parseCafebabe()) return false;
-    m_pos = 4;
-    m_pos = parseVersions(m_pos);
-    m_pos = parseConstantPool(m_pos);
+    parseVersions();
+    parseConstantPool();
+    parseAccessFlags();
 
     return true;
 }
@@ -40,30 +41,21 @@ bool vmClassFile::parse()
 bool vmClassFile::parseCafebabe()
 {
     magic_number = ntohl(*(uint32_t*)(m_block));
+    m_pos = 4;
     return (magic_number == 0xCAFEBABE);
-
-    if (m_block[0] != 0xCA) return false;
-    if (m_block[1] != 0xFE) return false;
-    if (m_block[2] != 0xBA) return false;
-    if (m_block[3] != 0xBE) return false;
-
-    std::cout << "magic_number " << magic_number << "  " << 0xcafebabe << "\n";
-
-    return true;
 }
 
-uint32_t vmClassFile::parseVersions(uint32_t pos)
+void vmClassFile::parseVersions()
 {
-    minor_version = ntohs(*(uint16_t*)(m_block + pos));
-    pos += 2;
-    major_version = ntohs(*(uint16_t*)(m_block + pos));
-    pos += 2;
+    minor_version = ntohs(*(uint16_t*)(m_block + m_pos));
+    major_version = ntohs(*(uint16_t*)(m_block + m_pos + 2));
 
-    return pos;
+    m_pos += 4;
 }
 
-uint32_t vmClassFile::parseConstantPool(uint32_t pos)
+void vmClassFile::parseConstantPool()
 {
+    uint32_t pos = m_pos;
     constant_pool_count = ntohs(*(uint16_t*)(m_block + pos));
     pos += 2;
     for (uint16_t i = 0; i < constant_pool_count - 1; ++i) {
@@ -76,5 +68,17 @@ uint32_t vmClassFile::parseConstantPool(uint32_t pos)
         }
         pos += res->size;
     }
-    return pos;
+    m_pos = pos;
+}
+
+void vmClassFile::parseAccessFlags()
+{
+    access_flags = ntohs(*(uint16_t*)(m_block + m_pos));
+    m_pos += 2;
+}
+
+void vmClassFile::parseThis()
+{
+    access_flags = ntohs(*(uint16_t*)(m_block + m_pos));
+    m_pos += 2;
 }
