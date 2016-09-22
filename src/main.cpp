@@ -1,5 +1,6 @@
 #include <iostream>
 #include <classloader.h>
+#include <cstring>
 
 int main(int argc, char **argv)
 {
@@ -30,11 +31,19 @@ int main(int argc, char **argv)
             vmConstantUtf8 *u = dynamic_cast<vmConstantUtf8*>(m.constant_pool[a->name_index]);
             if (u != nullptr) {
                 std::cout << "Section: " << u->bytes << "\n";
-                //std::cout << i << " " << u->bytes << "\n";
-                for (uint32_t l = 0; l< a->length; ++l) {
-                    std::cout << " " << (unsigned int)a->info[l];
+                if (strncmp((const char*)u->bytes, "Code", 4) == 0) {
+                    vmCodeAttribute *code = new vmCodeAttribute(a);
+                    for (uint32_t l = 0; l< code->code_length; ++l) {
+                        std::cout << " " << std::hex << (unsigned int)code->code[l];
+                    }
+                    std::cout << std::dec << "\n";
+                } else {
+                    //std::cout << i << " " << u->bytes << "\n";
+                    for (uint32_t l = 0; l< a->length; ++l) {
+                        std::cout << " " << (unsigned int)a->info[l];
+                    }
+                    std::cout << "\n";
                 }
-                std::cout << "\n";
             }
             ++i;
         }

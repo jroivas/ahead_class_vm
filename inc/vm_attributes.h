@@ -21,16 +21,15 @@ public:
 
 class vmCodeAttribute : public vmAttributeInfo
 {
-protected:
+public:
     vmCodeAttribute(vmAttributeInfo *orig);
 
-public:
     uint16_t max_stack;
     uint16_t max_locals;
     uint32_t code_length;
     uint8_t *code;
-    uint16_t exceptions_length;
-    std::vector<vmExceptionInfo*> exception_table;
-    uint16_t attributes_length;
+    uint16_t exceptions_count;
+    std::vector<vmExceptionInfo*> exceptions;
+    uint16_t attributes_count;
     std::vector<vmAttributeInfo*> attributes;
 };

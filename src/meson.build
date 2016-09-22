@@ -5,6 +5,7 @@ ahead_class_vm = executable('ahead_class_vm',
         'vm_methods.cpp',
         'vm_attributes.cpp',
         'vm_fields.cpp',
+        'vm_exceptions.cpp',
         'utils.cpp',
         'main.cpp'
     ],
