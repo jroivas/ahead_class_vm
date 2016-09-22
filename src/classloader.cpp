@@ -22,6 +22,7 @@ bool vmClassFile::readFromFile(std::string fname)
 
     m_block = new uint8_t [size + 1];
     cfile.read((char*)m_block, size);
+    if (size != (uint64_t)cfile.gcount()) return false;
 
     cfile.close();
 
@@ -66,7 +67,9 @@ void vmClassFile::parseConstantPool()
     pos += 2;
     constant_pool.push_back(nullptr);
     for (uint16_t i = 0; i < constant_pool_count - 1; ++i) {
+        //std::cout << "#" << (i+1) << " ";
         vmConstantInfo *res = vmConstantInfo::parse(m_block + pos);
+        //std::cout << "\n";
         if (res == nullptr) {
             std::cout << " Invalid constant at " << i << "\n";
             throw "Invalid constant";
@@ -74,6 +77,7 @@ void vmClassFile::parseConstantPool()
             constant_pool.push_back(res);
         }
         pos += res->size;
+        i += res->index_inc - 1;
     }
     m_pos = pos;
 }

@@ -33,6 +33,8 @@ vmConstantInfo *vmConstantInfo::parse(uint8_t *p)
     if (!p) return nullptr;
     vmConstants tag = (vmConstants)*p;
 
+    //std::cout << "tag " << tag << " ";
+
     switch (tag) {
         case C_Utf8:
             return new vmConstantUtf8(tag, read16(p + 1), (const uint8_t*)(p + 3));
@@ -78,6 +80,8 @@ vmConstantUtf8::vmConstantUtf8(vmConstants tag, uint16_t l, const uint8_t *b)
     bytes = new uint8_t [length + 1];
     memset(bytes, 0, length + 1);
     memmove(bytes, b, length);
+    //std::cout << " SS " << l << " ";
+    //std::cout << " " << bytes << " ";
 }
 
 vmConstantUtf8::~vmConstantUtf8()

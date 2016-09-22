@@ -17,7 +17,6 @@ int main(int argc, char **argv)
         std::cout << "ERROR: Parsing of " << argv[1] << " failed!\n";
         return 2;
     }
-    /*
     std::cout << "Parse? " << (ok ? "ok" :"fail") << "\n";
     std::cout << "Version " << m.major_version << " " << m.minor_version << "\n";
     std::cout << "Access flags " << m.access_flags << "\n";
@@ -27,21 +26,22 @@ int main(int argc, char **argv)
     std::cout << "Fields " << m.fields_count << "\n";
     std::cout << "Methods " << m.methods_count << "\n";
     std::cout << "Attrib " << m.attributes_count << "\n";
+    /*
     */
     vmStack *st = new vmStack();
     VM *vm = new VM(&m, st);
     for (auto me : m.methods) {
         uint16_t i = 1;
-        /*
         vmConstantUtf8 *mu = dynamic_cast<vmConstantUtf8*>(m.constant_pool[me->name_index]);
         if (mu) {
             std::cout << "Method: " << mu->bytes << "\n";
         }
+        /*
         */
         for (auto a : me->attributes) {
             vmConstantUtf8 *u = dynamic_cast<vmConstantUtf8*>(m.constant_pool[a->name_index]);
             if (u != nullptr) {
-                //std::cout << "Section: " << u->bytes << "\n";
+                std::cout << " Section: " << u->bytes << "\n";
                 if (strncmp((const char*)u->bytes, "Code", 4) == 0) {
                     vmCodeAttribute *code = new vmCodeAttribute(a);
                     /*
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
                 } else {
                     //std::cout << i << " " << u->bytes << "\n";
                     for (uint32_t l = 0; l< a->length; ++l) {
-                        std::cout << " " << (unsigned int)a->info[l];
+                        std::cout << " " << std::hex << (unsigned int)a->info[l];
                     }
                     std::cout << "\n";
                 }

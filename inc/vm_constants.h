@@ -24,12 +24,13 @@ enum vmConstants {
 class vmConstantInfo
 {
 protected:
-    vmConstantInfo(vmConstants tag) {}
+    vmConstantInfo(vmConstants t) : tag(t), index_inc(1) {}
 
 public:
-    virtual ~vmConstantInfo() {}
+    virtual ~vmConstantInfo(){}
     vmConstants tag;
     uint32_t size;
+    uint8_t index_inc;
 
     static vmConstantInfo *parse(uint8_t *p);
     virtual vmConstantInfo *resolve(std::vector<vmConstantInfo*> &);
@@ -146,6 +147,7 @@ class vmConstantLong : public vmConstantInfo
 public:
     vmConstantLong(vmConstants tag, uint64_t v) : vmConstantInfo(tag)
     {
+        index_inc = 2;
         val = v;
         size = 9;
     }
@@ -157,6 +159,7 @@ class vmConstantDouble : public vmConstantInfo
 public:
     vmConstantDouble(vmConstants tag, uint64_t v) : vmConstantInfo(tag)
     {
+        index_inc = 2;
         val = (double)v;
         size = 9;
     }
