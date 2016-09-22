@@ -25,7 +25,9 @@ private:
     uint8_t fetch();
     void decode(uint8_t);
     void invokeSpecial();
+    void invokeVirtual();
     void getStatic();
+    void ldc();
 
     vmConstantRef *parseRef(uint16_t idx);
     vmConstantClass *parseRefClass(vmConstantRef *ref);

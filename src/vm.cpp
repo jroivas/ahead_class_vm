@@ -1,5 +1,6 @@
 #include "vm.h"
 #include <iostream>
+#include <typeinfo>
 
 #include <cstring>
 #include <cassert>
@@ -41,6 +42,9 @@ uint8_t VM::fetch()
 void VM::decode(uint8_t opcode)
 {
     switch (opcode) {
+        case 0x12:
+            ldc();
+            break;
         case 0x2a:
             if (locals.empty()) {
                 locals.push_back(new vmObject(cl));
@@ -51,6 +55,9 @@ void VM::decode(uint8_t opcode)
             return;
         case 0xb2:
             getStatic();
+            break;
+        case 0xb6:
+            invokeVirtual();
             break;
         case 0xb7:
             invokeSpecial();
@@ -110,24 +117,6 @@ void VM::invokeSpecial()
     uint16_t idx = read16(ptr + pc);
     pc += 2;
 
-    /*
-    // FIXME Sanity
-    vmConstantInfo *tmp = cl->constant_pool[idx];
-    vmConstantMethodRef *method = dynamic_cast<vmConstantMethodRef *>(tmp);
-
-    if (!method) throw "aa";
-    // TODO More automatic resolving, now this is stupid...
-
-    tmp = method->resolve(cl->constant_pool);
-    vmConstantClass *classref = dynamic_cast<vmConstantClass *>(tmp);
-    if (!method) throw "bb";
-
-    tmp = classref->resolve(cl->constant_pool);
-    vmConstantUtf8 *classname = dynamic_cast<vmConstantUtf8 *>(tmp);
-    if (!classname) throw "cc";
-
-    vmConstantNameAndType *nametype = dynamic_cast<vmConstantNameAndType *>(method->resolve2(cl->constant_pool));
-    */
     vmConstantRef *method = parseRef(idx);
     vmConstantClass *classref = parseRefClass(method);
     vmConstantNameAndType *nametype = parseRefNameType(method);
@@ -144,9 +133,34 @@ void VM::invokeSpecial()
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
     std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
     throw "Invalid call";
+}
 
-    //vmConstantInfo *aa = b->resolve(cl->constant_pool);
-    //std::cout << "aa: " << aa <<"\n";
+void VM::invokeVirtual()
+{
+    uint16_t idx = read16(ptr + pc);
+    pc += 2;
+
+    vmConstantRef *method = parseRef(idx);
+    vmConstantClass *classref = parseRefClass(method);
+    vmConstantNameAndType *nametype = parseRefNameType(method);
+    vmConstantUtf8 *classname = parseRefUtf8(classref);
+
+    if (classname->str() == "java/io/PrintStream") {
+        // FIXME real class and virtual methods
+        if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "println") {
+            // FIXME do not hardcode parameter handling
+            if (((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() == "(Ljava/lang/String;)V") {
+                //std::cout << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
+                //vmObject *obj = stack->pop();
+            }
+            //return;
+        }
+    }
+
+    std::cout << " Invoke class " << classname->str() << "\n";
+    std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
+    std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
+    throw "Invalid virtual call";
 }
 
 void VM::getStatic()
@@ -160,10 +174,46 @@ void VM::getStatic()
     vmConstantUtf8 *classname = parseRefUtf8(classref);
 
     if (classname->str() == "java/lang/System") {
+        if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "out") {
+            if (((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() == "Ljava/io/PrintStream;") {
+                stack->push(new SystemPrinter());
+                return;
+            }
+        }
     }
 
     std::cout << " Invoke class " << classname->bytes << "\n";
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->bytes << "\n";
     std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->bytes << "\n";
+    throw "Invalid static";
 }
 
+
+void VM::ldc()
+{
+    uint16_t idx = *(ptr + pc);
+    pc += 1;
+
+    vmConstantInfo *tmp = cl->constant_pool[idx];
+
+    vmConstantInteger *intg = dynamic_cast<vmConstantInteger*>(tmp);
+    if (intg) { stack->push(new vmInteger(intg->val)); return; }
+
+    vmConstantLong *lintg = dynamic_cast<vmConstantLong*>(tmp);
+    if (lintg) { stack->push(new vmLong(lintg->val)); return; }
+
+    vmConstantFloat *flg = dynamic_cast<vmConstantFloat*>(tmp);
+    if (flg) { stack->push(new vmFloat(flg->val)); return; }
+
+    vmConstantDouble *dlg = dynamic_cast<vmConstantDouble*>(tmp);
+    if (dlg) { stack->push(new vmDouble(dlg->val)); return; }
+
+    vmConstantString *str = dynamic_cast<vmConstantString*>(tmp);
+    if (str) {
+        vmConstantUtf8 *n = parseRefUtf8(str);
+        stack->push(new vmString(n->str()));
+        return;
+    }
+
+    throw "Invalid object";
+}

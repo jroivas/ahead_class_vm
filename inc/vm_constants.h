@@ -90,6 +90,7 @@ public:
         size = 3;
     }
     uint16_t index;
+    virtual vmConstantInfo *resolve(std::vector<vmConstantInfo*> &info) { return info[index]; }
 };
 
 class vmConstantUtf8 : public vmConstantInfo
