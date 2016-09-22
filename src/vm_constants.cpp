@@ -4,6 +4,30 @@
 
 #include "utils.h"
 
+vmConstantInfo* vmConstantInfo::resolve(std::vector<vmConstantInfo*> &)
+{
+    return nullptr;
+}
+vmConstantInfo* vmConstantInfo::resolve2(std::vector<vmConstantInfo*> &)
+{
+    return nullptr;
+}
+
+vmConstantInfo* vmConstantClass::resolve(std::vector<vmConstantInfo*> &info)
+{
+    return info[index];
+}
+
+vmConstantInfo* vmConstantRef::resolve(std::vector<vmConstantInfo*> &info)
+{
+    return info[index];
+}
+
+vmConstantInfo* vmConstantRef::resolve2(std::vector<vmConstantInfo*> &info)
+{
+    return info[nameTypeIndex];
+}
+
 vmConstantInfo *vmConstantInfo::parse(uint8_t *p)
 {
     if (!p) return nullptr;

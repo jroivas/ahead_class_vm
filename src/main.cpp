@@ -1,6 +1,7 @@
 #include <iostream>
 #include <classloader.h>
 #include <cstring>
+#include <vm.h>
 
 int main(int argc, char **argv)
 {
@@ -21,6 +22,8 @@ int main(int argc, char **argv)
     std::cout << "Fields " << m.fields_count << "\n";
     std::cout << "Methods " << m.methods_count << "\n";
     std::cout << "Attrib " << m.attributes_count << "\n";
+    vmStack *st = new vmStack();
+    VM *vm = new VM(&m, st);
     for (auto me : m.methods) {
         uint16_t i = 1;
         vmConstantUtf8 *mu = dynamic_cast<vmConstantUtf8*>(m.constant_pool[me->name_index]);
@@ -37,6 +40,7 @@ int main(int argc, char **argv)
                         std::cout << " " << std::hex << (unsigned int)code->code[l];
                     }
                     std::cout << std::dec << "\n";
+                    vm->execute(code);
                 } else {
                     //std::cout << i << " " << u->bytes << "\n";
                     for (uint32_t l = 0; l< a->length; ++l) {

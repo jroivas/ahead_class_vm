@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 
 enum vmConstants {
     C_Utf8 = 1,
@@ -30,6 +31,8 @@ public:
     uint32_t size;
 
     static vmConstantInfo *parse(uint8_t *p);
+    virtual vmConstantInfo *resolve(std::vector<vmConstantInfo*> &);
+    virtual vmConstantInfo *resolve2(std::vector<vmConstantInfo*> &);
 };
 
 class vmConstantClass : public vmConstantInfo
@@ -41,6 +44,7 @@ public:
         size = 3;
     }
     uint16_t index;
+    virtual vmConstantInfo *resolve(std::vector<vmConstantInfo*> &);
 };
 
 class vmConstantRef : public vmConstantInfo
@@ -54,6 +58,8 @@ public:
     }
     uint16_t index;
     uint16_t nameTypeIndex;
+    virtual vmConstantInfo *resolve(std::vector<vmConstantInfo*> &);
+    virtual vmConstantInfo *resolve2(std::vector<vmConstantInfo*> &);
 };
 
 class vmConstantMethodRef : public vmConstantRef
@@ -100,11 +106,14 @@ public:
     vmConstantNameAndType(vmConstants tag, uint16_t v, uint16_t d) : vmConstantInfo(tag)
     {
         index = v;
-        descriptor = v;
+        descriptor = d;
         size = 5;
     }
     uint16_t index;
     uint16_t descriptor;
+
+    virtual vmConstantInfo *resolve(std::vector<vmConstantInfo*> &info) { return info[index]; }
+    virtual vmConstantInfo *resolve2(std::vector<vmConstantInfo*> &info) { return info[descriptor]; }
 };
 
 class vmConstantInteger : public vmConstantInfo

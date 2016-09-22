@@ -1,5 +1,6 @@
 #include "vm_fields.h"
 #include "utils.h"
+#include <iostream>
 
 vmFieldInfo *vmFieldInfo::parse(uint8_t *p)
 {
