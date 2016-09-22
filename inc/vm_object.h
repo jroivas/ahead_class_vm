@@ -12,4 +12,6 @@ public:
     virtual ~vmObject() {}
 
     vmClassFile *classFile;
+
+    void init() {}
 };

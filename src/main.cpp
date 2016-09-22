@@ -36,6 +36,7 @@ int main(int argc, char **argv)
                 std::cout << "Section: " << u->bytes << "\n";
                 if (strncmp((const char*)u->bytes, "Code", 4) == 0) {
                     vmCodeAttribute *code = new vmCodeAttribute(a);
+                    std::cout << "CL: " << code->code_length << "\n";
                     for (uint32_t l = 0; l< code->code_length; ++l) {
                         std::cout << " " << std::hex << (unsigned int)code->code[l];
                     }

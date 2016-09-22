@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cstdint>
+#include <string>
 #include <vector>
+#include <cstdint>
 
 enum vmConstants {
     C_Utf8 = 1,
@@ -98,6 +99,7 @@ public:
     ~vmConstantUtf8();
     uint16_t length;
     uint8_t *bytes;
+    std::string str() { return std::string((const char*)bytes, length); }
 };
 
 class vmConstantNameAndType : public vmConstantInfo

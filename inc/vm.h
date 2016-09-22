@@ -25,4 +25,10 @@ private:
     uint8_t fetch();
     void decode(uint8_t);
     void invokeSpecial();
+    void getStatic();
+
+    vmConstantRef *parseRef(uint16_t idx);
+    vmConstantClass *parseRefClass(vmConstantRef *ref);
+    vmConstantNameAndType *parseRefNameType(vmConstantRef *ref);
+    vmConstantUtf8 *parseRefUtf8(vmConstantInfo *ref);
 };
