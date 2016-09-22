@@ -2,8 +2,7 @@
 #include <iostream>
 #include <cstring>
 
-#include <arpa/inet.h>
-#include <endian.h>
+#include "utils.h"
 
 vmConstantInfo *vmConstantInfo::parse(uint8_t *p)
 {
@@ -12,52 +11,27 @@ vmConstantInfo *vmConstantInfo::parse(uint8_t *p)
 
     switch (tag) {
         case C_Utf8:
-            return new vmConstantUtf8(tag,
-                ntohs(*(uint16_t*)(p + 1)),
-                (const uint8_t*)(p + 3)
-            );
+            return new vmConstantUtf8(tag, read16(p + 1), (const uint8_t*)(p + 3));
         case C_Integer:
-            return new vmConstantInteger(tag,
-                ntohl(*(uint32_t*)(p + 1))
-            );
+            return new vmConstantInteger(tag, read32(p + 1));
         case C_Float:
-            return new vmConstantFloat(tag,
-                ntohl(*(uint32_t*)(p + 1))
-            );
+            return new vmConstantFloat(tag, read32(p + 1));
         case C_Long:
-            return new vmConstantLong(tag,
-                be64toh(*(uint64_t*)(p + 1))
-            );
+            return new vmConstantLong(tag, read64(p + 1));
         case C_Double:
-            return new vmConstantDouble(tag,
-                be64toh(*(uint64_t*)(p + 1))
-            );
+            return new vmConstantDouble(tag, read64(p + 1));
         case C_Class:
-            return new vmConstantClass(tag, ntohs(*(uint16_t*)(p + 1)));
+            return new vmConstantClass(tag, read16(p + 1));
         case C_String:
-            return new vmConstantString(tag,
-                ntohs(*(uint16_t*)(p + 1))
-            );
+            return new vmConstantString(tag, read16(p + 1));
         case C_FieldRef:
-            return new vmConstantFieldRef(tag,
-                ntohs(*(uint16_t*)(p + 1)),
-                ntohs(*(uint16_t*)(p + 3))
-            );
+            return new vmConstantFieldRef(tag, read16(p + 1), read16(p + 3));
         case C_MethodRef:
-            return new vmConstantMethodRef(tag,
-                ntohs(*(uint16_t*)(p + 1)),
-                ntohs(*(uint16_t*)(p + 3))
-            );
+            return new vmConstantMethodRef(tag, read16(p + 1), read16(p + 3));
         case C_InterfaceMethodRef:
-            return new vmConstantInterfaceMethodRef(tag,
-                ntohs(*(uint16_t*)(p + 1)),
-                ntohs(*(uint16_t*)(p + 3))
-            );
+            return new vmConstantInterfaceMethodRef(tag, read16(p + 1), read16(p + 3));
         case C_NameAndType:
-            return new vmConstantNameAndType(tag,
-                ntohs(*(uint16_t*)(p + 1)),
-                ntohs(*(uint16_t*)(p + 3))
-            );
+            return new vmConstantNameAndType(tag, read16(p + 1), read16(p + 3));
         case C_MethodHandle:
             break;
         case C_MethodType:

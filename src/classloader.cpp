@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <arpa/inet.h>
+#include "utils.h"
 
 vmClassFile::vmClassFile(std::string fname)
     : m_pos(0)
@@ -46,15 +46,15 @@ bool vmClassFile::parse()
 
 bool vmClassFile::parseCafebabe()
 {
-    magic_number = ntohl(*(uint32_t*)(m_block));
+    magic_number = read32(m_block);
     m_pos = 4;
     return (magic_number == 0xCAFEBABE);
 }
 
 void vmClassFile::parseVersions()
 {
-    minor_version = ntohs(*(uint16_t*)(m_block + m_pos));
-    major_version = ntohs(*(uint16_t*)(m_block + m_pos + 2));
+    minor_version = read16(m_block + m_pos);
+    major_version = read16(m_block + m_pos + 2);
 
     m_pos += 4;
 }
@@ -62,7 +62,7 @@ void vmClassFile::parseVersions()
 void vmClassFile::parseConstantPool()
 {
     uint32_t pos = m_pos;
-    constant_pool_count = ntohs(*(uint16_t*)(m_block + pos));
+    constant_pool_count = read16(m_block + pos);
     pos += 2;
     constant_pool.push_back(nullptr);
     for (uint16_t i = 0; i < constant_pool_count - 1; ++i) {
@@ -80,26 +80,26 @@ void vmClassFile::parseConstantPool()
 
 void vmClassFile::parseAccessFlags()
 {
-    access_flags = ntohs(*(uint16_t*)(m_block + m_pos));
+    access_flags = read16(m_block + m_pos);
     m_pos += 2;
 }
 
 void vmClassFile::parseThis()
 {
-    this_class = ntohs(*(uint16_t*)(m_block + m_pos));
+    this_class = read16(m_block + m_pos);
     m_pos += 2;
 }
 
 void vmClassFile::parseSuper()
 {
-    super_class = ntohs(*(uint16_t*)(m_block + m_pos));
+    super_class = read16(m_block + m_pos);
     m_pos += 2;
 }
 
 void vmClassFile::parseInterfaces()
 {
     uint32_t pos = m_pos;
-    interfaces_count = ntohs(*(uint16_t*)(m_block + pos));
+    interfaces_count = read16(m_block + m_pos);
     pos += 2;
     for (uint16_t i = 0; i < interfaces_count; ++i) {
         // FIXME
@@ -112,7 +112,7 @@ void vmClassFile::parseInterfaces()
 void vmClassFile::parseFields()
 {
     uint32_t pos = m_pos;
-    fields_count = ntohs(*(uint16_t*)(m_block + pos));
+    fields_count = read16(m_block + m_pos);
     pos += 2;
     for (uint16_t i = 0; i < fields_count; ++i) {
         vmFieldInfo *res = vmFieldInfo::parse(m_block + pos);
@@ -130,7 +130,7 @@ void vmClassFile::parseFields()
 void vmClassFile::parseMethods()
 {
     uint32_t pos = m_pos;
-    methods_count = ntohs(*(uint16_t*)(m_block + pos));
+    methods_count = read16(m_block + m_pos);
     pos += 2;
     for (uint16_t i = 0; i < methods_count; ++i) {
         vmMethodInfo *res = vmMethodInfo::parse(m_block + pos);
@@ -148,7 +148,7 @@ void vmClassFile::parseMethods()
 void vmClassFile::parseAttributes()
 {
     uint32_t pos = m_pos;
-    attributes_count = ntohs(*(uint16_t*)(m_block + pos));
+    attributes_count = read16(m_block + m_pos);
     pos += 2;
     for (uint16_t i = 0; i < attributes_count; ++i) {
         vmAttributeInfo *res = vmAttributeInfo::parse(m_block + pos);

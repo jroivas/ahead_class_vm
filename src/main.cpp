@@ -32,7 +32,7 @@ int main(int argc, char **argv)
                 std::cout << "Section: " << u->bytes << "\n";
                 //std::cout << i << " " << u->bytes << "\n";
                 for (uint32_t l = 0; l< a->length; ++l) {
-                    std::cout << " " << (unsigned int)a->info[l] << " ";
+                    std::cout << " " << (unsigned int)a->info[l];
                 }
                 std::cout << "\n";
             }
