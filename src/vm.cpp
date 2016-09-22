@@ -26,7 +26,7 @@ bool VM::execute(vmCodeAttribute *code)
     pc = 0;
     ptr = code->code;
     while (pc < code->code_length) {
-        std::cout << " PC " << pc << "  " << code->code_length <<"\n";
+        //std::cout << " PC " << pc << "  " << code->code_length <<"\n";
         uint8_t opcode = fetch();
         decode(opcode);
     }
@@ -151,7 +151,10 @@ void VM::invokeVirtual()
             // FIXME do not hardcode parameter handling
             if (((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() == "(Ljava/lang/String;)V") {
                 //std::cout << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
-                //vmObject *obj = stack->pop();
+                vmObject *obj = stack->pop();
+                vmString *str = static_cast<vmString*>(obj);
+                std::cout << str->val << "\n";
+                return;
             }
             //return;
         }
