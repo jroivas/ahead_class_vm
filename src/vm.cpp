@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cassert>
 #include <time.h>
+#include <typeinfo>
 
 #include "utils.h"
 
@@ -13,6 +14,9 @@ VM::VM(vmClassFile *_cl, vmStack *_stack)
     stack(_stack),
     ptr(nullptr)
 {
+    for (uint8_t i = 0; i < 100; ++i) {
+        locals.push_back(nullptr);
+    }
 }
 
 void VM::addClassRef(vmClassFile *cl)
@@ -43,8 +47,29 @@ uint8_t VM::fetch()
 void VM::decode(uint8_t opcode)
 {
     switch (opcode) {
+        case 0x03:
+            stack->push(new vmLong(0));
+            break;
+        case 0x04:
+            stack->push(new vmLong(1));
+            break;
+        case 0x05:
+            stack->push(new vmLong(2));
+            break;
+        case 0x06:
+            stack->push(new vmLong(3));
+            break;
+        case 0x07:
+            stack->push(new vmLong(4));
+            break;
+        case 0x08:
+            stack->push(new vmLong(5));
+            break;
         case 0x12:
             ldc();
+            break;
+        case 0x40:
+            lstore(1);
             break;
         case 0x2a:
             if (locals.empty()) {
@@ -52,6 +77,9 @@ void VM::decode(uint8_t opcode)
                 locals.push_back(new vmObject(cl));
             }
             stack->push(locals[0]);
+            break;
+        case 0x3e:
+            istore(3);
             break;
         case 0xb1:
             return;
@@ -250,4 +278,42 @@ void VM::ldc()
     }
 
     throw "Invalid object";
+}
+
+void VM::lstore(uint8_t index)
+{
+    vmObject *d = stack->pop();
+    vmLong *i = nullptr;
+    if (typeid(*d) == typeid(vmInteger)) {
+        i = new vmLong(((vmInteger*)d)->val);
+    } else if (typeid(*d) == typeid(vmLong)) {
+        i = (vmLong*)d;
+    } else if (typeid(*d) == typeid(vmDouble)) {
+        i = new vmLong(((vmDouble*)d)->val);
+    } else if (typeid(*d) == typeid(vmFloat)) {
+        i = new vmLong(((vmFloat*)d)->val);
+    } else {
+        throw "Invalid conversion";
+    }
+    locals[index] = i;
+    //locals.insert(locals.begin() + index, i);
+}
+
+void VM::istore(uint8_t index)
+{
+    vmObject *d = stack->pop();
+    vmInteger *i = nullptr;
+    if (typeid(*d) == typeid(vmInteger)) {
+        i = (vmInteger*)d;
+    } else if (typeid(*d) == typeid(vmLong)) {
+        i = new vmInteger(((vmLong*)d)->val);
+    } else if (typeid(*d) == typeid(vmDouble)) {
+        i = new vmInteger(((vmDouble*)d)->val);
+    } else if (typeid(*d) == typeid(vmFloat)) {
+        i = new vmInteger(((vmFloat*)d)->val);
+    } else {
+        throw "Invalid conversion";
+    }
+    //locals.insert(locals.begin() + index, i);
+    locals[index] = i;
 }

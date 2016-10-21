@@ -29,6 +29,8 @@ private:
     void invokeStatic();
     void getStatic();
     void ldc();
+    void lstore(uint8_t index);
+    void istore(uint8_t index);
 
     vmConstantRef *parseRef(uint16_t idx);
     vmConstantClass *parseRefClass(vmConstantRef *ref);
