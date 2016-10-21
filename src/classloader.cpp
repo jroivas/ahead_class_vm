@@ -77,7 +77,10 @@ void vmClassFile::parseConstantPool()
             constant_pool.push_back(res);
         }
         pos += res->size;
-        i += res->index_inc - 1;
+        i += (res->index_inc - 1);
+        for (uint8_t d = 0; d < (res->index_inc - 1); ++d) {
+            constant_pool.push_back(res);
+        }
     }
     m_pos = pos;
 }

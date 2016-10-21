@@ -26,6 +26,7 @@ private:
     void decode(uint8_t);
     void invokeSpecial();
     void invokeVirtual();
+    void invokeStatic();
     void getStatic();
     void ldc();
 

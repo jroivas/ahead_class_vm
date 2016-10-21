@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include <cassert>
+#include <time.h>
 
 #include "utils.h"
 
@@ -47,6 +48,7 @@ void VM::decode(uint8_t opcode)
             break;
         case 0x2a:
             if (locals.empty()) {
+                //solve "this" object from cl
                 locals.push_back(new vmObject(cl));
             }
             stack->push(locals[0]);
@@ -61,6 +63,9 @@ void VM::decode(uint8_t opcode)
             break;
         case 0xb7:
             invokeSpecial();
+            break;
+        case 0xb8:
+            invokeStatic();
             break;
         default:
             std::cout <<  "Unimplemented: " << std::hex << (uint32_t)opcode << "\n";
@@ -164,6 +169,32 @@ void VM::invokeVirtual()
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
     std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
     throw "Invalid virtual call";
+}
+
+void VM::invokeStatic()
+{
+    uint16_t idx = read16(ptr + pc);
+    pc += 2;
+
+    vmConstantRef *method = parseRef(idx);
+    vmConstantClass *classref = parseRefClass(method);
+    vmConstantNameAndType *nametype = parseRefNameType(method);
+    vmConstantUtf8 *classname = parseRefUtf8(classref);
+
+    if (classname->str() == "java/lang/System") {
+        if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "currentTimeMillis") {
+            struct timespec tt;
+            clock_gettime(CLOCK_REALTIME, &tt);
+            stack->push(new vmLong(tt.tv_sec * 1000 + tt.tv_nsec / 1000000));
+            //stack->push(new vmObject());
+            return;
+        }
+    }
+
+    std::cout << " Invoke class " << classname->str() << "\n";
+    std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
+    std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
+    throw "Invalid call";
 }
 
 void VM::getStatic()

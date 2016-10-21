@@ -32,14 +32,14 @@ int main(int argc, char **argv)
     VM *vm = new VM(&m, st);
     for (auto me : m.methods) {
         uint16_t i = 1;
-        vmConstantUtf8 *mu = dynamic_cast<vmConstantUtf8*>(m.constant_pool[me->name_index]);
+        vmConstantUtf8 *mu = static_cast<vmConstantUtf8*>(m.constant_pool[me->name_index]);
         if (mu) {
             std::cout << "Method: " << mu->bytes << "\n";
         }
         /*
         */
         for (auto a : me->attributes) {
-            vmConstantUtf8 *u = dynamic_cast<vmConstantUtf8*>(m.constant_pool[a->name_index]);
+            vmConstantUtf8 *u = static_cast<vmConstantUtf8*>(m.constant_pool[a->name_index]);
             if (u != nullptr) {
                 std::cout << " Section: " << u->bytes << "\n";
                 if (strncmp((const char*)u->bytes, "Code", 4) == 0) {

@@ -28,7 +28,7 @@ vmAttributeInfo *vmAttributeInfo::parse(uint8_t *p)
     res->length = read32(p + 2);
     res->size = 6;
     res->info = new uint8_t[res->length];
-    memmove(res->info, p + 6, res->length);
+    memmove(res->info, p + res->size, res->length);
     res->size += res->length;
 
     return res;
