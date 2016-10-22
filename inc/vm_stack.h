@@ -14,5 +14,6 @@ public:
     vmObject *pop();
 
     uint32_t size;
+private:
     std::vector<vmObject*> stack;
 };

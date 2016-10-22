@@ -34,6 +34,8 @@ private:
     void iload(uint8_t index);
     void icmp(uint8_t oper);
     void astore_idx();
+    void iinc();
+    void vm_goto();
 
     vmInteger *toInteger(vmObject *);
     vmLong *toLong(vmObject *);
