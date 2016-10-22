@@ -33,6 +33,7 @@ private:
     void istore(uint8_t index);
     void iload(uint8_t index);
     void icmp(uint8_t oper);
+    void astore_idx();
 
     vmInteger *toInteger(vmObject *);
     vmLong *toLong(vmObject *);

@@ -90,6 +90,9 @@ void VM::decode(uint8_t opcode)
             }
             stack->push(locals[0]);
             break;
+        case 0x3a:
+            astore_idx();
+            break;
         case 0x3e:
             istore(3);
             break;
@@ -307,6 +310,15 @@ void VM::istore(uint8_t index)
     vmObject *d = stack->pop();
     locals[index] = toInteger(d);
 }
+
+void VM::astore_idx()
+{
+    uint8_t index = *(ptr + pc);
+    pc++;
+
+    stack->push(new vmRef(locals[index]));
+}
+
 
 vmInteger *VM::toInteger(vmObject *d)
 {

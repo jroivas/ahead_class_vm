@@ -58,3 +58,9 @@ public:
     double val;
 };
 
+class vmRef : public vmObject
+{
+public:
+    vmRef(vmObject *v) : vmObject(), val(v) {}
+    vmObject *val;
+};
