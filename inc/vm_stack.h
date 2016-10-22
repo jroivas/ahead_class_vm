@@ -12,6 +12,7 @@ public:
 
     void push(vmObject *obj);
     vmObject *pop();
+    vmObject *peek();
 
     uint32_t size;
 private:

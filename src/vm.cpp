@@ -116,6 +116,9 @@ void VM::decode(uint8_t opcode)
         case 0x42:
             lstore(3);
             break;
+        case 0x59:
+            dup();
+            break;
         case 0x65:
             lsub();
             break;
@@ -496,4 +499,10 @@ void VM::vm_new()
     vmClass *c = loadClass((char*)classname->bytes);
     std::cout << " New class base " << c << "\n";
     stack->push(c->newInstance());
+}
+
+void VM::dup()
+{
+    vmObject *o = stack->peek();
+    stack->push(o);
 }

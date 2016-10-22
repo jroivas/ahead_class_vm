@@ -27,3 +27,8 @@ vmObject *vmStack::pop()
     stack.pop_back();
     return tmp;
 }
+
+vmObject *vmStack::peek()
+{
+    return stack.back();
+}

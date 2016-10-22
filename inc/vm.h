@@ -37,6 +37,7 @@ private:
     void astore_idx();
     void iinc();
     void lsub();
+    void dup();
     void vm_goto();
     void vm_new();
 
