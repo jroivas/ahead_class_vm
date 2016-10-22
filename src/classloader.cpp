@@ -4,6 +4,21 @@
 
 #include "utils.h"
 
+static std::vector<vmClass*> __classes;
+
+void registerClass(vmClass *cl)
+{
+    __classes.push_back(cl);
+}
+
+vmClass *loadClass(std::string name)
+{
+    for (auto c : __classes) {
+        if (c->name == name) return c;
+    }
+    return nullptr;
+}
+
 vmClassFile::vmClassFile(std::string fname)
     : m_pos(0)
 {

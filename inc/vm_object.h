@@ -14,7 +14,7 @@ enum vmType {
     TYPE_FLOAT,
     TYPE_DOUBLE,
     TYPE_REF,
-    TYPE_STATIC
+    TYPE_CLASS
 };
 
 class vmObject
@@ -31,10 +31,34 @@ public:
     vmType type;
 };
 
-class SystemPrinter : public vmObject
+class vmClass;
+void registerClass(vmClass *cl);
+
+class vmClass : public vmObject
 {
 public:
-    SystemPrinter() : vmObject(TYPE_STATIC) {}
+    vmClass(std::string n) : vmObject(TYPE_CLASS), name(n), baseClass(nullptr) {
+        registerClass(this);
+    }
+    virtual ~vmClass() {}
+    virtual vmClass *newInstance() = 0;
+    bool isBaseClass() { return baseClass == nullptr; }
+
+    std::string name;
+    vmClass *baseClass;
+};
+
+class SystemPrinter : public vmClass
+{
+public:
+    // FIXME
+    SystemPrinter() : vmClass("SystemPrinter") {}
+    virtual ~SystemPrinter() {}
+    virtual vmClass *newInstance() {
+        SystemPrinter* p = new SystemPrinter();
+        p->baseClass = this;
+        return p;
+    }
 };
 
 class vmString : public vmObject

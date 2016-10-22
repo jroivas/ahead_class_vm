@@ -36,7 +36,9 @@ private:
     void icmp(uint8_t oper);
     void astore_idx();
     void iinc();
+    void lsub();
     void vm_goto();
+    void vm_new();
 
     vmInteger *toInteger(vmObject *);
     vmLong *toLong(vmObject *);
@@ -45,4 +47,5 @@ private:
     vmConstantClass *parseRefClass(vmConstantRef *ref);
     vmConstantNameAndType *parseRefNameType(vmConstantRef *ref);
     vmConstantUtf8 *parseRefUtf8(vmConstantInfo *ref);
+    vmConstantClass *parseClassConstant(uint16_t idx);
 };

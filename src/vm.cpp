@@ -104,8 +104,20 @@ void VM::decode(uint8_t opcode)
         case 0x21:
             lload(3);
             break;
+        case 0x3f:
+            lstore(0);
+            break;
         case 0x40:
             lstore(1);
+            break;
+        case 0x41:
+            lstore(2);
+            break;
+        case 0x42:
+            lstore(3);
+            break;
+        case 0x65:
+            lsub();
             break;
         case 0x84:
             iinc();
@@ -153,6 +165,9 @@ void VM::decode(uint8_t opcode)
         case 0xb8:
             invokeStatic();
             break;
+        case 0xbb:
+            vm_new();
+            break;
         default:
             std::cout <<  "Unimplemented: " << std::hex << (uint32_t)opcode << "\n";
             throw "Unimplemented";
@@ -165,6 +180,17 @@ vmConstantRef *VM::parseRef(uint16_t idx)
     vmConstantRef *ref = dynamic_cast<vmConstantRef *>(tmp);
     if (!ref) {
         std::cout << "Invalid reference " << idx << "\n";
+        throw "invalid reference";
+    }
+    return ref;
+}
+
+vmConstantClass *VM::parseClassConstant(uint16_t idx)
+{
+    vmConstantInfo *tmp = cl->constant_pool[idx];
+    vmConstantClass *ref = dynamic_cast<vmConstantClass *>(tmp);
+    if (!ref) {
+        std::cout << "Invalid reference\n";
         throw "invalid reference";
     }
     return ref;
@@ -449,4 +475,25 @@ void VM::vm_goto()
     int16_t target = read16(ptr + pc);
     std::cout << "TARGET: " << target << " PC " << pc << "\n";
     pc += target - 1;
+}
+
+void VM::lsub()
+{
+    vmLong *v1 = toLong(stack->pop());
+    vmLong *v2 = toLong(stack->pop());
+    stack->push(new vmLong(v2->val - v1->val));
+}
+
+void VM::vm_new()
+{
+    int16_t idx = read16(ptr + pc);
+    pc += 2;
+
+    // FIXME
+    vmConstantClass *classref = parseClassConstant(idx);
+    vmConstantUtf8 *classname = parseRefUtf8(classref);
+    std::cout << " New class type " << classname->bytes << "\n";
+    vmClass *c = loadClass((char*)classname->bytes);
+    std::cout << " New class base " << c << "\n";
+    stack->push(c->newInstance());
 }

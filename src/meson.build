@@ -13,6 +13,10 @@ ahead_class_vm = executable('ahead_class_vm',
         'main.cpp'
     ],
     include_directories: [
+        top_inc,
         main_inc
+    ],
+    link_with: [
+        libclass
     ]
 )

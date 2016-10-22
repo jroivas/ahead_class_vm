@@ -3,6 +3,8 @@
 #include <cstring>
 #include <vm.h>
 
+#include <lib/stringbuilder.h>
+
 int main(int argc, char **argv)
 {
     if (argc <= 1) {
@@ -30,6 +32,9 @@ int main(int argc, char **argv)
     */
     vmStack *st = new vmStack();
     VM *vm = new VM(&m, st);
+    // Init
+    new StringBuilder();
+
     for (auto me : m.methods) {
         uint16_t i = 1;
         vmConstantUtf8 *mu = static_cast<vmConstantUtf8*>(m.constant_pool[me->name_index]);
