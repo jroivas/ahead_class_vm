@@ -32,6 +32,7 @@ private:
     void lstore(uint8_t index);
     void istore(uint8_t index);
     void iload(uint8_t index);
+    void lload(uint8_t index);
     void icmp(uint8_t oper);
     void astore_idx();
     void iinc();

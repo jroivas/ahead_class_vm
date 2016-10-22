@@ -92,6 +92,18 @@ void VM::decode(uint8_t opcode)
         case 0x1d:
             iload(3);
             break;
+        case 0x1e:
+            lload(0);
+            break;
+        case 0x1f:
+            lload(1);
+            break;
+        case 0x20:
+            lload(2);
+            break;
+        case 0x21:
+            lload(3);
+            break;
         case 0x40:
             lstore(1);
             break;
@@ -340,9 +352,7 @@ void VM::lstore(uint8_t index)
 
 void VM::istore(uint8_t index)
 {
-    vmObject *d = stack->pop();
-    std::cout << "IS\n";
-    locals[index] = toInteger(d);
+    locals[index] = toInteger(stack->pop());
 }
 
 void VM::astore_idx()
@@ -350,17 +360,13 @@ void VM::astore_idx()
     uint8_t index = *(ptr + pc);
     pc++;
 
-    std::cout << "ST IDX " << (long)index << "\n";
-    vmObject *a = stack->pop();
-    std::cout << "TT " << typeid(*a).name() << "\n";
-    locals[index] = new vmRef(a);
+    locals[index] = new vmRef(stack->pop());
     //stack->push(new vmRef(locals[index]));
 }
 
 
 vmInteger *VM::toInteger(vmObject *d)
 {
-    std::cout << "toI " << d  << " " << typeName(d) << "\n";
     switch (d->type) {
         case TYPE_INTEGER: return static_cast<vmInteger*>(d);
         case TYPE_LONG: return new vmInteger(((vmLong*)d)->val);
@@ -391,18 +397,16 @@ vmLong *VM::toLong(vmObject *d)
 
 void VM::iload(uint8_t index)
 {
-    std::cout << "Il " << pc << "\n";
-    vmInteger *i = toInteger(locals[index]);
-    std::cout << " VAL " << typeName(i) << "\n";
-    stack->push(i);
+    stack->push(toInteger(locals[index]));
+}
+
+void VM::lload(uint8_t index)
+{
+    stack->push(toLong(locals[index]));
 }
 
 void VM::icmp(uint8_t oper)
 {
-    std::cout << "Icmp" << pc << "\n";
-    int16_t target = read16(ptr + pc);
-
-    std::cout << " TGT " << stack->size <<"\n";
     vmInteger *v1 = toInteger(stack->pop());
     vmInteger *v2 = toInteger(stack->pop());
 
