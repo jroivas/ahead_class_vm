@@ -9,6 +9,15 @@
 
 #include "utils.h"
 
+enum cmpOp {
+    CMP_EQ = 1,
+    CMP_NE,
+    CMP_GE,
+    CMP_GT,
+    CMP_LE,
+    CMP_LT
+};
+
 VM::VM(vmClassFile *_cl, vmStack *_stack)
     : cl(_cl),
     stack(_stack),
@@ -68,6 +77,9 @@ void VM::decode(uint8_t opcode)
         case 0x12:
             ldc();
             break;
+        case 0x1d:
+            iload(3);
+            break;
         case 0x40:
             lstore(1);
             break;
@@ -81,7 +93,11 @@ void VM::decode(uint8_t opcode)
         case 0x3e:
             istore(3);
             break;
+        case 0xa2:
+            icmp(CMP_GE);
+            break;
         case 0xb1:
+            // return
             return;
         case 0xb2:
             getStatic();
@@ -283,25 +299,17 @@ void VM::ldc()
 void VM::lstore(uint8_t index)
 {
     vmObject *d = stack->pop();
-    vmLong *i = nullptr;
-    if (typeid(*d) == typeid(vmInteger)) {
-        i = new vmLong(((vmInteger*)d)->val);
-    } else if (typeid(*d) == typeid(vmLong)) {
-        i = (vmLong*)d;
-    } else if (typeid(*d) == typeid(vmDouble)) {
-        i = new vmLong(((vmDouble*)d)->val);
-    } else if (typeid(*d) == typeid(vmFloat)) {
-        i = new vmLong(((vmFloat*)d)->val);
-    } else {
-        throw "Invalid conversion";
-    }
-    locals[index] = i;
-    //locals.insert(locals.begin() + index, i);
+    locals[index] = toLong(d);
 }
 
 void VM::istore(uint8_t index)
 {
     vmObject *d = stack->pop();
+    locals[index] = toInteger(d);
+}
+
+vmInteger *VM::toInteger(vmObject *d)
+{
     vmInteger *i = nullptr;
     if (typeid(*d) == typeid(vmInteger)) {
         i = (vmInteger*)d;
@@ -314,6 +322,61 @@ void VM::istore(uint8_t index)
     } else {
         throw "Invalid conversion";
     }
-    //locals.insert(locals.begin() + index, i);
-    locals[index] = i;
+    return i;
+}
+
+vmLong *VM::toLong(vmObject *d)
+{
+    vmLong *i = nullptr;
+    if (typeid(*d) == typeid(vmInteger)) {
+        i = new vmLong(((vmInteger*)d)->val);
+    } else if (typeid(*d) == typeid(vmLong)) {
+        i = (vmLong*)d;
+    } else if (typeid(*d) == typeid(vmDouble)) {
+        i = new vmLong(((vmDouble*)d)->val);
+    } else if (typeid(*d) == typeid(vmFloat)) {
+        i = new vmLong(((vmFloat*)d)->val);
+    } else {
+        throw "Invalid conversion";
+    }
+    return i;
+}
+
+void VM::iload(uint8_t index)
+{
+    vmObject *d = locals[index];
+    // FIXME types
+    stack->push(d);
+}
+
+void VM::icmp(uint8_t oper)
+{
+    int16_t target = read16(ptr + pc);
+    pc += 2;
+
+    vmInteger *v1 = toInteger(stack->pop());
+    vmInteger *v2 = toInteger(stack->pop());
+
+    switch (oper) {
+        case CMP_EQ:
+            if (v1->val == v2->val) pc = target;
+            break;
+        case CMP_NE:
+            if (v1->val != v2->val) pc = target;
+            break;
+        case CMP_GE:
+            if (v1->val >= v2->val) pc = target;
+            break;
+        case CMP_GT:
+            if (v1->val > v2->val) pc = target;
+            break;
+        case CMP_LE:
+            if (v1->val <= v2->val) pc = target;
+            break;
+        case CMP_LT:
+            if (v1->val < v2->val) pc = target;
+            break;
+        default:
+            break;
+    }
 }

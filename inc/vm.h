@@ -31,6 +31,11 @@ private:
     void ldc();
     void lstore(uint8_t index);
     void istore(uint8_t index);
+    void iload(uint8_t index);
+    void icmp(uint8_t oper);
+
+    vmInteger *toInteger(vmObject *);
+    vmLong *toLong(vmObject *);
 
     vmConstantRef *parseRef(uint16_t idx);
     vmConstantClass *parseRefClass(vmConstantRef *ref);
