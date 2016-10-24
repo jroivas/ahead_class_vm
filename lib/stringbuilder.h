@@ -5,7 +5,7 @@
 class StringBuilder : public vmClass
 {
 public:
-    StringBuilder() : vmClass("java/lang/StringBuilder") {}
+    StringBuilder();
     virtual ~StringBuilder() {}
     virtual vmClass *newInstance();
 };

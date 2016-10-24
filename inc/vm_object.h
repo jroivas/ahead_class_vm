@@ -2,8 +2,12 @@
 
 #include <string>
 #include <cstddef>
+#include <functional>
+#include <map>
+#include <vector>
 
 class vmClassFile;
+class vmStack;
 
 enum vmType {
     TYPE_INV = 1,
@@ -33,6 +37,7 @@ public:
 
 class vmClass;
 void registerClass(vmClass *cl);
+std::vector<std::string> parseField(std::string);
 
 class vmClass : public vmObject
 {
@@ -44,8 +49,14 @@ public:
     virtual vmClass *newInstance() = 0;
     bool isBaseClass() { return baseClass == nullptr; }
 
+    std::function<void(vmStack *)> getFunction(std::string name);
+    void setFunction(std::string name, std::function<void(vmStack *)> f) {
+        methods[name] = f;
+    }
+
     std::string name;
     vmClass *baseClass;
+    std::map<std::string, std::function<void(vmStack *)>> methods;
 };
 
 class SystemPrinter : public vmClass

@@ -236,17 +236,29 @@ void VM::invokeSpecial()
 {
     uint16_t idx = read16(ptr + pc);
     pc += 2;
+    std::cout << " ISP\n";
 
     vmConstantRef *method = parseRef(idx);
     vmConstantClass *classref = parseRefClass(method);
     vmConstantNameAndType *nametype = parseRefNameType(method);
     vmConstantUtf8 *classname = parseRefUtf8(classref);
 
+    vmObject *objectRef = stack->pop();
+
     if (classname->str() == "java/lang/Object") {
         if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "<init>") {
             stack->push(new vmObject());
             return;
         }
+    }
+    if (objectRef->type == TYPE_CLASS) {
+        vmClass *inst = static_cast<vmClass*>(objectRef);
+        auto f = inst->getFunction(((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str());
+        if (!f) {
+            throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
+        }
+        f(stack);
+        return;
     }
 
     std::cout << " Invoke class " << classname->str() << "\n";
@@ -259,6 +271,7 @@ void VM::invokeVirtual()
 {
     uint16_t idx = read16(ptr + pc);
     pc += 2;
+    std::cout << " IV\n";
 
     vmConstantRef *method = parseRef(idx);
     vmConstantClass *classref = parseRefClass(method);
@@ -267,7 +280,11 @@ void VM::invokeVirtual()
 
     std::cout << " Invoke class " << classname->str() << "\n";
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
-    std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
+    std::cout << " Desc  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
+
+    // FIXME first pop off arguments, then pop objectref
+    vmObject *objectRef = stack->pop();
+    std::cout << " OR  " << typeName(objectRef) << "\n";
 
     if (classname->str() == "java/io/PrintStream") {
         // FIXME real class and virtual methods
@@ -283,6 +300,14 @@ void VM::invokeVirtual()
             //return;
         }
     }
+    // FIXME new stack frame
+    vmClass *inst = static_cast<vmClass*>(objectRef);
+    auto f = inst->getFunction(((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str());
+    if (!f) {
+        throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
+    }
+    f(stack);
+    return;
 
     std::cout << " Invoke class " << classname->str() << "\n";
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
@@ -294,6 +319,7 @@ void VM::invokeStatic()
 {
     uint16_t idx = read16(ptr + pc);
     pc += 2;
+    std::cout << " IST\n";
 
     vmConstantRef *method = parseRef(idx);
     vmConstantClass *classref = parseRefClass(method);
