@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <cstring>
 
 enum vmConstants {
     C_Utf8 = 1,
@@ -136,10 +137,13 @@ class vmConstantFloat : public vmConstantInfo
 public:
     vmConstantFloat(vmConstants tag, uint32_t v) : vmConstantInfo(tag)
     {
-        val = (float)v;
+        sval = v;
         size = 5;
     }
-    float val;
+    union {
+        float val;
+        uint32_t sval;
+    };
 };
 
 class vmConstantLong : public vmConstantInfo
@@ -160,8 +164,11 @@ public:
     vmConstantDouble(vmConstants tag, uint64_t v) : vmConstantInfo(tag)
     {
         index_inc = 2;
-        val = (double)v;
+        sval = v;
         size = 9;
     }
-    double val;
+    union {
+        double val;
+        uint64_t sval;
+    };
 };

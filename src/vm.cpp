@@ -593,8 +593,9 @@ void VM::iinc()
 void VM::vm_goto()
 {
     int16_t target = read16(ptr + pc);
-    std::cout << "TARGET: " << target << " PC " << pc << "\n";
+    //std::cout << "TARGET: " << target << " PC " << pc << "\n";
     pc += target - 1;
+    std::cout << " TARGET PC " << pc << "\n";
 }
 
 void VM::lsub()
@@ -644,5 +645,10 @@ void VM::dup()
 void VM::l2d()
 {
     vmLong *l = toLong(stack->pop());
-    stack->push(new vmDouble(l->val));
+    union {
+        double dv;
+        uint64_t lv;
+    };
+    lv = l->val;
+    stack->push(new vmDouble(dv));
 }

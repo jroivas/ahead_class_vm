@@ -1,6 +1,7 @@
 #include "vm_constants.h"
 #include <iostream>
 #include <cstring>
+#include <cmath>
 
 #include "utils.h"
 
