@@ -80,6 +80,12 @@ void VM::decode(uint8_t opcode)
         case 0x12:
             ldc();
             break;
+        case 0x13:
+            ldc_w();
+            break;
+        case 0x14:
+            ldc_w();
+            break;
         case 0x1a:
             iload(0);
             break;
@@ -104,27 +110,6 @@ void VM::decode(uint8_t opcode)
         case 0x21:
             lload(3);
             break;
-        case 0x3f:
-            lstore(0);
-            break;
-        case 0x40:
-            lstore(1);
-            break;
-        case 0x41:
-            lstore(2);
-            break;
-        case 0x42:
-            lstore(3);
-            break;
-        case 0x59:
-            dup();
-            break;
-        case 0x65:
-            lsub();
-            break;
-        case 0x84:
-            iinc();
-            break;
         case 0x2a:
             if (locals.empty()) {
                 //solve "this" object from cl
@@ -146,6 +131,36 @@ void VM::decode(uint8_t opcode)
             break;
         case 0x3e:
             istore(3);
+            break;
+        case 0x3f:
+            lstore(0);
+            break;
+        case 0x40:
+            lstore(1);
+            break;
+        case 0x41:
+            lstore(2);
+            break;
+        case 0x42:
+            lstore(3);
+            break;
+        case 0x59:
+            dup();
+            break;
+        case 0x65:
+            lsub();
+            break;
+        case 0x6b:
+            dmul();
+            break;
+        case 0x6f:
+            ddiv();
+            break;
+        case 0x8a:
+            l2d();
+            break;
+        case 0x84:
+            iinc();
             break;
         case 0xa2:
             icmp(CMP_GE);
@@ -236,7 +251,6 @@ void VM::invokeSpecial()
 {
     uint16_t idx = read16(ptr + pc);
     pc += 2;
-    std::cout << " ISP\n";
 
     vmConstantRef *method = parseRef(idx);
     vmConstantClass *classref = parseRefClass(method);
@@ -271,19 +285,21 @@ void VM::invokeVirtual()
 {
     uint16_t idx = read16(ptr + pc);
     pc += 2;
-    std::cout << " IV\n";
 
     vmConstantRef *method = parseRef(idx);
     vmConstantClass *classref = parseRefClass(method);
     vmConstantNameAndType *nametype = parseRefNameType(method);
     vmConstantUtf8 *classname = parseRefUtf8(classref);
 
+    /*
     std::cout << " Invoke class " << classname->str() << "\n";
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
     std::cout << " Desc  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
+    */
     std::pair<std::string, std::string> rr = parseParams(((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str());
     std::vector<std::string> pp = parseField(rr.first);
     std::vector<std::string> r = parseField(rr.second);
+    /*
     std::cout << " params: ";
     for (auto p : pp) {
         std::cout << " " << p << " ";
@@ -292,8 +308,10 @@ void VM::invokeVirtual()
     if (r.size()>0){
     std::cout << " retval: " << r[0] << "\n";
     }
+    */
 
 
+    /*
     if (classname->str() == "java/io/PrintStream") {
         // FIXME real class and virtual methods
         if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "println") {
@@ -308,6 +326,7 @@ void VM::invokeVirtual()
             //return;
         }
     }
+    */
 
     vmStack *st = new vmStack();
     for (auto p : pp) {
@@ -342,7 +361,6 @@ void VM::invokeStatic()
 {
     uint16_t idx = read16(ptr + pc);
     pc += 2;
-    std::cout << " IST\n";
 
     vmConstantRef *method = parseRef(idx);
     vmConstantClass *classref = parseRefClass(method);
@@ -356,7 +374,6 @@ void VM::invokeStatic()
             vmLong *v = new vmLong(tt.tv_sec * 1000 + tt.tv_nsec / 1000000);
             std::cout << "TIMEMILLI " << v << " " << v->val << "\n";
             stack->push(v);
-            //stack->push(new vmObject());
             return;
         }
     }
@@ -380,13 +397,18 @@ void VM::getStatic()
     if (classname->str() == "java/lang/System") {
         if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "out") {
             if (((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() == "Ljava/io/PrintStream;") {
-                stack->push(new SystemPrinter());
+                vmClass *cl = loadClass("java/io/PrintStream");
+                if (!cl) {
+                    throw "Can't load class: java/io/PrintStream";
+                }
+                stack->push(cl);
+                //stack->push(new SystemPrinter());
                 return;
             }
         }
     }
 
-    std::cout << " Invoke class " << classname->bytes << "\n";
+    std::cout << " getStatic class " << classname->bytes << "\n";
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->bytes << "\n";
     std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->bytes << "\n";
     throw "Invalid static";
@@ -419,6 +441,37 @@ void VM::ldc()
         return;
     }
 
+    std::cout <<  "Invalid object: " << idx << " " << tmp << "\n";
+    throw "Invalid object";
+}
+
+void VM::ldc_w()
+{
+    uint16_t idx = read16(ptr + pc);
+    pc += 2;
+
+    vmConstantInfo *tmp = cl->constant_pool[idx];
+
+    vmConstantInteger *intg = dynamic_cast<vmConstantInteger*>(tmp);
+    if (intg) { stack->push(new vmInteger(intg->val)); return; }
+
+    vmConstantLong *lintg = dynamic_cast<vmConstantLong*>(tmp);
+    if (lintg) { stack->push(new vmLong(lintg->val)); return; }
+
+    vmConstantFloat *flg = dynamic_cast<vmConstantFloat*>(tmp);
+    if (flg) { stack->push(new vmFloat(flg->val)); return; }
+
+    vmConstantDouble *dlg = dynamic_cast<vmConstantDouble*>(tmp);
+    if (dlg) { stack->push(new vmDouble(dlg->val)); return; }
+
+    vmConstantString *str = dynamic_cast<vmConstantString*>(tmp);
+    if (str) {
+        vmConstantUtf8 *n = parseRefUtf8(str);
+        stack->push(new vmString(n->str()));
+        return;
+    }
+
+    std::cout <<  "Invalid object: " << idx << " " << tmp << "\n";
     throw "Invalid object";
 }
 
@@ -466,6 +519,21 @@ vmLong *VM::toLong(vmObject *d)
         case TYPE_FLOAT: return new vmLong(((vmFloat*)d)->val);
         case TYPE_DOUBLE: return new vmLong(((vmDouble*)d)->val);
         case TYPE_REF: return toLong(((vmRef*)d)->val);
+        default:
+            std::cout << "PC " << pc << "\n";
+            std::cout << "Convert from " << typeName(d) << "\n";
+            throw "Invalid conversion";
+    }
+}
+
+vmDouble *VM::toDouble(vmObject *d)
+{
+    switch (d->type) {
+        case TYPE_DOUBLE: return static_cast<vmDouble*>(d);
+        case TYPE_LONG: return new vmDouble(((vmInteger*)d)->val);
+        case TYPE_FLOAT: return new vmDouble(((vmFloat*)d)->val);
+        case TYPE_INTEGER: return new vmDouble(((vmInteger*)d)->val);
+        case TYPE_REF: return toDouble(((vmRef*)d)->val);
         default:
             std::cout << "PC " << pc << "\n";
             std::cout << "Convert from " << typeName(d) << "\n";
@@ -536,6 +604,23 @@ void VM::lsub()
     stack->push(new vmLong(v2->val - v1->val));
 }
 
+void VM::ddiv()
+{
+    vmDouble *v1 = toDouble(stack->pop());
+    vmDouble *v2 = toDouble(stack->pop());
+    if (v1->val == 0) {
+        throw "Divide by zero";
+    }
+    stack->push(new vmDouble(v2->val / v1->val));
+}
+
+void VM::dmul()
+{
+    vmDouble *v1 = toDouble(stack->pop());
+    vmDouble *v2 = toDouble(stack->pop());
+    stack->push(new vmDouble(v2->val * v1->val));
+}
+
 void VM::vm_new()
 {
     int16_t idx = read16(ptr + pc);
@@ -544,9 +629,9 @@ void VM::vm_new()
     // FIXME
     vmConstantClass *classref = parseClassConstant(idx);
     vmConstantUtf8 *classname = parseRefUtf8(classref);
-    std::cout << " New class type " << classname->bytes << "\n";
+    //std::cout << " New class type " << classname->bytes << "\n";
     vmClass *c = loadClass((char*)classname->bytes);
-    std::cout << " New class base " << c << "\n";
+    //std::cout << " New class base " << c << "\n";
     stack->push(c->newInstance());
 }
 
@@ -554,4 +639,10 @@ void VM::dup()
 {
     vmObject *o = stack->peek();
     stack->push(o);
+}
+
+void VM::l2d()
+{
+    vmLong *l = toLong(stack->pop());
+    stack->push(new vmDouble(l->val));
 }

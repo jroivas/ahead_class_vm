@@ -4,6 +4,7 @@
 #include <vm.h>
 
 #include <lib/stringbuilder.h>
+#include <lib/printstream.h>
 
 int main(int argc, char **argv)
 {
@@ -34,6 +35,7 @@ int main(int argc, char **argv)
     VM *vm = new VM(&m, st);
     // Init
     new StringBuilder();
+    new PrintStream();
 
     for (auto me : m.methods) {
         uint16_t i = 1;

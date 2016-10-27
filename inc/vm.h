@@ -29,6 +29,7 @@ private:
     void invokeStatic();
     void getStatic();
     void ldc();
+    void ldc_w();
     void lstore(uint8_t index);
     void istore(uint8_t index);
     void iload(uint8_t index);
@@ -37,12 +38,16 @@ private:
     void astore_idx();
     void iinc();
     void lsub();
+    void dmul();
+    void ddiv();
     void dup();
+    void l2d();
     void vm_goto();
     void vm_new();
 
     vmInteger *toInteger(vmObject *);
     vmLong *toLong(vmObject *);
+    vmDouble *toDouble(vmObject *);
 
     vmConstantRef *parseRef(uint16_t idx);
     vmConstantClass *parseRefClass(vmConstantRef *ref);

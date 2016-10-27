@@ -63,11 +63,13 @@ std::vector<std::string> parseField(std::string f)
                 case 'S': types.push_back(formatType("short", array)); array = 0; break;
                 case 'Z': types.push_back(formatType("bool", array)); array = 0; break;
                 case '[': array++; break;
+                case 'V': break;
                 case 'L':
                     ref = true;
                     v = "";
                     break;
                 default:
+                    std::cout << "Invalid type: " << c << "\n";
                     throw "Invalid type: " + c;
             }
         }
