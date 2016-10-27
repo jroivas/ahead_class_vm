@@ -17,17 +17,22 @@ std::string typeName(vmObject *o) {
     return "INVALID";
 }
 
+#include <iostream>
+
 std::function<void(vmStack*)> vmClass::getFunction(std::string name)
 {
     for (auto m : methods) {
-        if (m.first == name) return m.second;
+        if (m.first == name) {
+            return m.second;
+        }
     }
-    return nullptr;
+    std::function<void(vmStack*)> r;
+    return r;
 }
 
 std::string formatType(std::string val, uint32_t array)
 {
-    for (uint32_t i = 0; i < array) {
+    for (uint32_t i = 0; i < array; ++i) {
         // FIXME
         val+= "[]";
     }
@@ -45,6 +50,8 @@ std::vector<std::string> parseField(std::string f)
             types.push_back(formatType(v, array));
             ref = false;
             array = 0;
+        } else if (ref) {
+            v += c;
         } else {
             switch (c) {
                 case 'B': types.push_back(formatType("byte", array)); array = 0; break;
@@ -66,4 +73,24 @@ std::vector<std::string> parseField(std::string f)
         }
     }
     return types;
+}
+
+std::pair<std::string,std::string> parseParams(std::string f)
+{
+    std::string params = "";
+    std::string ret = "";
+    bool bracket = false;
+    bool retval = false;
+    for (auto c : f) {
+        if (c == '(') bracket = true;
+        else if (c == ')') {
+            bracket = false;
+            retval = true;
+        } else if (bracket) {
+            params += c;
+        } else if (retval) {
+            ret += c;
+        }
+    }
+    return std::pair<std::string,std::string>(params, ret);
 }

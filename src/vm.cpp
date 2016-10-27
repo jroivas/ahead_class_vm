@@ -281,10 +281,18 @@ void VM::invokeVirtual()
     std::cout << " Invoke class " << classname->str() << "\n";
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
     std::cout << " Desc  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
+    std::pair<std::string, std::string> rr = parseParams(((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str());
+    std::vector<std::string> pp = parseField(rr.first);
+    std::vector<std::string> r = parseField(rr.second);
+    std::cout << " params: ";
+    for (auto p : pp) {
+        std::cout << " " << p << " ";
+    }
+    std::cout << "\n";
+    if (r.size()>0){
+    std::cout << " retval: " << r[0] << "\n";
+    }
 
-    // FIXME first pop off arguments, then pop objectref
-    vmObject *objectRef = stack->pop();
-    std::cout << " OR  " << typeName(objectRef) << "\n";
 
     if (classname->str() == "java/io/PrintStream") {
         // FIXME real class and virtual methods
@@ -300,14 +308,29 @@ void VM::invokeVirtual()
             //return;
         }
     }
-    // FIXME new stack frame
-    vmClass *inst = static_cast<vmClass*>(objectRef);
-    auto f = inst->getFunction(((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str());
-    if (!f) {
-        throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
+
+    vmStack *st = new vmStack();
+    for (auto p : pp) {
+        st->push(stack->pop());
     }
-    f(stack);
-    return;
+    // FIXME first pop off arguments, then pop objectref
+    vmObject *objectRef = stack->pop();
+
+    // FIXME new stack frame
+    vmClass *inst = dynamic_cast<vmClass*>(objectRef);
+    if (inst) {
+        std::string fname = ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
+        auto f = inst->getFunction(fname);
+        if (!f) {
+            std::cout <<  "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
+            throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
+        }
+        f(st);
+        if (r.size()>0) {
+            stack->push(st->pop());
+        }
+        return;
+    }
 
     std::cout << " Invoke class " << classname->str() << "\n";
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";

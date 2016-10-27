@@ -5,6 +5,7 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include <utility>
 
 class vmClassFile;
 class vmStack;
@@ -38,6 +39,7 @@ public:
 class vmClass;
 void registerClass(vmClass *cl);
 std::vector<std::string> parseField(std::string);
+std::pair<std::string,std::string> parseParams(std::string);
 
 class vmClass : public vmObject
 {

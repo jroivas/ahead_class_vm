@@ -8,4 +8,6 @@ public:
     StringBuilder();
     virtual ~StringBuilder() {}
     virtual vmClass *newInstance();
+
+    std::string val;
 };
