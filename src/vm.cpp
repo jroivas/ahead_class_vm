@@ -199,45 +199,43 @@ void VM::decode(uint8_t opcode)
 vmConstantRef *VM::parseRef(uint16_t idx)
 {
     vmConstantInfo *tmp = cl->constant_pool[idx];
-    vmConstantRef *ref = dynamic_cast<vmConstantRef *>(tmp);
-    if (!ref) {
+    if (tmp->tag != C_FieldRef &&
+        tmp->tag != C_MethodRef &&
+        tmp->tag != C_InterfaceMethodRef) {
         std::cout << "Invalid reference " << idx << "\n";
         throw "invalid reference";
     }
-    return ref;
+    return static_cast<vmConstantRef *>(tmp);
 }
 
 vmConstantClass *VM::parseClassConstant(uint16_t idx)
 {
     vmConstantInfo *tmp = cl->constant_pool[idx];
-    vmConstantClass *ref = dynamic_cast<vmConstantClass *>(tmp);
-    if (!ref) {
+    if (tmp->tag != C_Class) {
         std::cout << "Invalid reference\n";
         throw "invalid reference";
     }
-    return ref;
+    return static_cast<vmConstantClass *>(tmp);
 }
 
 vmConstantClass *VM::parseRefClass(vmConstantRef *p)
 {
     vmConstantInfo *tmp = p->resolve(cl->constant_pool);
-    vmConstantClass *ref = dynamic_cast<vmConstantClass *>(tmp);
-    if (!ref) {
+    if (tmp->tag != C_Class) {
         std::cout << "Invalid reference\n";
         throw "invalid reference";
     }
-    return ref;
+    return static_cast<vmConstantClass *>(tmp);
 }
 
 vmConstantNameAndType *VM::parseRefNameType(vmConstantRef *p)
 {
     vmConstantInfo *tmp = p->resolve2(cl->constant_pool);
-    vmConstantNameAndType *ref = dynamic_cast<vmConstantNameAndType *>(tmp);
-    if (!ref) {
+    if (tmp->tag != C_NameAndType) {
         std::cout << "Invalid reference\n";
         throw "invalid reference";
     }
-    return ref;
+    return static_cast<vmConstantNameAndType *>(tmp);
 }
 
 vmConstantUtf8 *VM::parseRefUtf8(vmConstantInfo *p)
