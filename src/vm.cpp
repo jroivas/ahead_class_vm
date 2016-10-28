@@ -187,7 +187,7 @@ void VM::decode(uint8_t opcode)
             vm_new();
             break;
         default:
-            std::cout <<  "Unimplemented: " << std::hex << (uint32_t)opcode << "\n";
+            std::cout <<  "Unimplemented: " << std::hex << (uint32_t)opcode << " @" << std::dec << pc << "\n";
             throw "Unimplemented";
     }
 }
@@ -558,26 +558,27 @@ void VM::icmp(uint8_t oper)
 
     switch (oper) {
         case CMP_EQ:
-            if (v1->val == v2->val) vm_goto();
+            if (v2->val == v1->val) vm_goto();
             break;
         case CMP_NE:
-            if (v1->val != v2->val) vm_goto();
+            if (v2->val != v1->val) vm_goto();
             break;
         case CMP_GE:
-            if (v1->val >= v2->val) vm_goto();
+            if (v2->val >= v1->val) vm_goto();
             break;
         case CMP_GT:
-            if (v1->val > v2->val) vm_goto();
+            if (v2->val > v1->val) vm_goto();
             break;
         case CMP_LE:
-            if (v1->val <= v2->val) vm_goto();
+            if (v2->val <= v1->val) vm_goto();
             break;
         case CMP_LT:
-            if (v1->val < v2->val) vm_goto();
+            if (v2->val < v1->val) vm_goto();
             break;
         default:
             break;
     }
+    pc += 2;
 }
 
 void VM::iinc()
@@ -645,10 +646,5 @@ void VM::dup()
 void VM::l2d()
 {
     vmLong *l = toLong(stack->pop());
-    union {
-        double dv;
-        uint64_t lv;
-    };
-    lv = l->val;
-    stack->push(new vmDouble(dv));
+    stack->push(new vmDouble(l->val));
 }
