@@ -87,6 +87,9 @@ void VM::decode(uint8_t opcode)
         case 0x14:
             ldc_w();
             break;
+        case 0x19:
+            aload();
+            break;
         case 0x1a:
             iload(0);
             break;
@@ -240,12 +243,11 @@ vmConstantNameAndType *VM::parseRefNameType(vmConstantRef *p)
 vmConstantUtf8 *VM::parseRefUtf8(vmConstantInfo *p)
 {
     vmConstantInfo *tmp = p->resolve(cl->constant_pool);
-    vmConstantUtf8 *ref = dynamic_cast<vmConstantUtf8 *>(tmp);
-    if (!ref) {
+    if (tmp->tag != C_Utf8) {
         std::cout << "Invalid reference\n";
         throw "invalid reference";
     }
-    return ref;
+    return static_cast<vmConstantUtf8 *>(tmp);
 }
 
 void VM::invokeSpecial()
@@ -384,7 +386,6 @@ void VM::invokeStatic()
     vmConstantNameAndType *nametype = parseRefNameType(method);
     vmConstantUtf8 *classname = parseRefUtf8(classref);
 
-    std::cout << " Invoke class " << classname->str() << "\n";
     if (classname->str() == "java/lang/System") {
         if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "currentTimeMillis") {
             struct timespec tt;
@@ -442,60 +443,43 @@ void VM::ldc()
 {
     uint16_t idx = *(ptr + pc);
     pc += 1;
-
-    vmConstantInfo *tmp = cl->constant_pool[idx];
-
-    vmConstantInteger *intg = dynamic_cast<vmConstantInteger*>(tmp);
-    if (intg) { stack->push(new vmInteger(intg->val)); return; }
-
-    vmConstantLong *lintg = dynamic_cast<vmConstantLong*>(tmp);
-    if (lintg) { stack->push(new vmLong(lintg->val)); return; }
-
-    vmConstantFloat *flg = dynamic_cast<vmConstantFloat*>(tmp);
-    if (flg) { stack->push(new vmFloat(flg->val)); return; }
-
-    vmConstantDouble *dlg = dynamic_cast<vmConstantDouble*>(tmp);
-    if (dlg) { stack->push(new vmDouble(dlg->val)); return; }
-
-    vmConstantString *str = dynamic_cast<vmConstantString*>(tmp);
-    if (str) {
-        vmConstantUtf8 *n = parseRefUtf8(str);
-        stack->push(new vmString(n->str()));
-        return;
-    }
-
-    std::cout <<  "Invalid object: " << idx << " " << tmp << "\n";
-    throw "Invalid object";
+    ldc_idx(idx);
 }
 
 void VM::ldc_w()
 {
     uint16_t idx = read16(ptr + pc);
     pc += 2;
+    ldc_idx(idx);
+}
 
+void VM::ldc_idx(uint16_t idx)
+{
     vmConstantInfo *tmp = cl->constant_pool[idx];
 
-    vmConstantInteger *intg = dynamic_cast<vmConstantInteger*>(tmp);
-    if (intg) { stack->push(new vmInteger(intg->val)); return; }
-
-    vmConstantLong *lintg = dynamic_cast<vmConstantLong*>(tmp);
-    if (lintg) { stack->push(new vmLong(lintg->val)); return; }
-
-    vmConstantFloat *flg = dynamic_cast<vmConstantFloat*>(tmp);
-    if (flg) { stack->push(new vmFloat(flg->val)); return; }
-
-    vmConstantDouble *dlg = dynamic_cast<vmConstantDouble*>(tmp);
-    if (dlg) { stack->push(new vmDouble(dlg->val)); return; }
-
-    vmConstantString *str = dynamic_cast<vmConstantString*>(tmp);
-    if (str) {
-        vmConstantUtf8 *n = parseRefUtf8(str);
-        stack->push(new vmString(n->str()));
-        return;
+    switch (tmp->tag) {
+        case C_Integer:
+            stack->push(new vmInteger(((vmConstantInteger*)tmp)->val));
+            break;
+        case C_Long:
+            stack->push(new vmLong(((vmConstantLong*)tmp)->val));
+            break;
+        case C_Float:
+            stack->push(new vmFloat(((vmConstantFloat*)tmp)->val));
+            break;
+        case C_Double:
+            stack->push(new vmDouble(((vmConstantDouble*)tmp)->val));
+            break;
+        case C_String: {
+            vmConstantUtf8 *n = parseRefUtf8((vmConstantString*)tmp);
+            stack->push(new vmString(n->str()));
+            break;
+        }
+        default:
+            std::cout <<  "Invalid object: " << idx << " " << tmp << "\n";
+            throw "Invalid object";
+            break;
     }
-
-    std::cout <<  "Invalid object: " << idx << " " << tmp << "\n";
-    throw "Invalid object";
 }
 
 void VM::lstore(uint8_t index)
@@ -562,6 +546,12 @@ vmDouble *VM::toDouble(vmObject *d)
             std::cout << "Convert from " << typeName(d) << "\n";
             throw "Invalid conversion";
     }
+}
+
+void VM::aload()
+{
+    uint8_t index = *(ptr + pc);
+    stack->push(new vmRef(locals[index]));
 }
 
 void VM::iload(uint8_t index)

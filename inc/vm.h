@@ -30,8 +30,10 @@ private:
     void getStatic();
     void ldc();
     void ldc_w();
+    void ldc_idx(uint16_t index);
     void lstore(uint8_t index);
     void istore(uint8_t index);
+    void aload();
     void iload(uint8_t index);
     void lload(uint8_t index);
     void icmp(uint8_t oper);

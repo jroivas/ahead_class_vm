@@ -83,10 +83,7 @@ public:
     static vmString* castFrom(vmObject* o)
     {
         if (!o) throw "Nullptr";
-        if (o->type == TYPE_STRING) {
-            return dynamic_cast<vmString *>(o);
-        }
-        return nullptr;
+        return o->type == TYPE_STRING ? dynamic_cast<vmString *>(o) : nullptr;
     }
 };
 
@@ -95,6 +92,11 @@ class vmInteger : public vmObject
 public:
     vmInteger(uint32_t v) : vmObject(TYPE_INTEGER), val(v) {}
     uint32_t val;
+    static vmInteger* castFrom(vmObject* o)
+    {
+        if (!o) throw "Nullptr";
+        return o->type == TYPE_INTEGER ? dynamic_cast<vmInteger *>(o) : nullptr;
+    }
 };
 
 class vmLong : public vmObject
@@ -102,6 +104,11 @@ class vmLong : public vmObject
 public:
     vmLong(uint64_t v) : vmObject(TYPE_LONG), val(v) {}
     uint64_t val;
+    static vmLong* castFrom(vmObject* o)
+    {
+        if (!o) throw "Nullptr";
+        return o->type == TYPE_LONG ? dynamic_cast<vmLong *>(o) : nullptr;
+    }
 };
 
 class vmFloat : public vmObject
@@ -109,6 +116,11 @@ class vmFloat : public vmObject
 public:
     vmFloat(float v) : vmObject(TYPE_FLOAT), val(v) {}
     float val;
+    static vmFloat* castFrom(vmObject* o)
+    {
+        if (!o) throw "Nullptr";
+        return o->type == TYPE_FLOAT ? dynamic_cast<vmFloat *>(o) : nullptr;
+    }
 };
 
 class vmDouble : public vmObject
@@ -116,6 +128,11 @@ class vmDouble : public vmObject
 public:
     vmDouble(float v) : vmObject(TYPE_DOUBLE), val(v) {}
     double val;
+    static vmDouble* castFrom(vmObject* o)
+    {
+        if (!o) throw "Nullptr";
+        return o->type == TYPE_DOUBLE ? dynamic_cast<vmDouble *>(o) : nullptr;
+    }
 };
 
 class vmRef : public vmObject
