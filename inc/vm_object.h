@@ -56,6 +56,7 @@ public:
         methods[name] = f;
     }
 
+    std::string val;
     std::string name;
     vmClass *baseClass;
     std::map<std::string, std::function<void(vmStack *)>> methods;
@@ -79,6 +80,14 @@ class vmString : public vmObject
 public:
     vmString(std::string v) : vmObject(TYPE_STRING), val(v) {}
     std::string val;
+    static vmString* castFrom(vmObject* o)
+    {
+        if (!o) throw "Nullptr";
+        if (o->type == TYPE_STRING) {
+            return dynamic_cast<vmString *>(o);
+        }
+        return nullptr;
+    }
 };
 
 class vmInteger : public vmObject

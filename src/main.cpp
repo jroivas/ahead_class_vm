@@ -36,6 +36,7 @@ int main(int argc, char **argv)
     // Init
     new StringBuilder();
     new PrintStream();
+    new ClassLangString();
 
     for (auto me : m.methods) {
         uint16_t i = 1;

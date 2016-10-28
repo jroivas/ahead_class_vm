@@ -11,6 +11,7 @@ public:
     vmStack(uint32_t);
 
     void push(vmObject *obj);
+    void insert(vmObject *obj);
     vmObject *pop();
     vmObject *peek();
 

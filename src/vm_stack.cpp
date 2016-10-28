@@ -19,6 +19,12 @@ void vmStack::push(vmObject *obj)
     stack.push_back(obj);
 }
 
+void vmStack::insert(vmObject *obj)
+{
+    ++size;
+    stack.insert(stack.begin(), obj);
+}
+
 vmObject *vmStack::pop()
 {
     vmObject *tmp = stack.back();

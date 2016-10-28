@@ -42,6 +42,7 @@ bool VM::execute(vmCodeAttribute *code)
     while (pc < code->code_length) {
         //std::cout << " PC " << pc << "  " << code->code_length <<"\n";
         uint8_t opcode = fetch();
+        //std::cout << " opcd " << pc << " " << std::hex << (long)opcode << std::dec <<"\n";
         decode(opcode);
     }
 
@@ -249,6 +250,8 @@ vmConstantUtf8 *VM::parseRefUtf8(vmConstantInfo *p)
 
 void VM::invokeSpecial()
 {
+    invokeVirtual();
+    return;
     uint16_t idx = read16(ptr + pc);
     pc += 2;
 
@@ -258,6 +261,9 @@ void VM::invokeSpecial()
     vmConstantUtf8 *classname = parseRefUtf8(classref);
 
     vmObject *objectRef = stack->pop();
+    std::cout << " Invoke special " << classname->str() << "\n";
+    std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
+    std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
 
     if (classname->str() == "java/lang/Object") {
         if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "<init>") {
@@ -328,15 +334,25 @@ void VM::invokeVirtual()
     }
     */
 
+    if (classname->str() == "java/lang/Object") {
+        if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "<init>") {
+            stack->push(new vmObject());
+            return;
+        }
+    }
+
     vmStack *st = new vmStack();
     for (auto p : pp) {
-        st->push(stack->pop());
+        st->insert(stack->pop());
     }
     // FIXME first pop off arguments, then pop objectref
     vmObject *objectRef = stack->pop();
+    st->insert(objectRef);
 
     // FIXME new stack frame
-    vmClass *inst = dynamic_cast<vmClass*>(objectRef);
+    //vmClass *inst = dynamic_cast<vmClass*>(objectRef);
+    //vmClass *inst = dynamic_cast<vmClass*>(objectRef);
+    vmClass *inst = loadClass(classname->str());
     if (inst) {
         std::string fname = ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
         auto f = inst->getFunction(fname);
@@ -351,6 +367,7 @@ void VM::invokeVirtual()
         return;
     }
 
+    std::cout << " obj " << typeName(objectRef) << "\n";
     std::cout << " Invoke class " << classname->str() << "\n";
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
     std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
@@ -367,13 +384,17 @@ void VM::invokeStatic()
     vmConstantNameAndType *nametype = parseRefNameType(method);
     vmConstantUtf8 *classname = parseRefUtf8(classref);
 
+    std::cout << " Invoke class " << classname->str() << "\n";
     if (classname->str() == "java/lang/System") {
         if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "currentTimeMillis") {
             struct timespec tt;
             clock_gettime(CLOCK_REALTIME, &tt);
+            stack->push(new vmLong(tt.tv_sec * 1000 + tt.tv_nsec / 1000000));
+            /*
             vmLong *v = new vmLong(tt.tv_sec * 1000 + tt.tv_nsec / 1000000);
             std::cout << "TIMEMILLI " << v << " " << v->val << "\n";
             stack->push(v);
+            */
             return;
         }
     }
@@ -398,6 +419,8 @@ void VM::getStatic()
         if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "out") {
             if (((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() == "Ljava/io/PrintStream;") {
                 vmClass *cl = loadClass("java/io/PrintStream");
+                //cl->val = ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
+                cl->val = "out";
                 if (!cl) {
                     throw "Can't load class: java/io/PrintStream";
                 }
@@ -514,8 +537,8 @@ vmInteger *VM::toInteger(vmObject *d)
 vmLong *VM::toLong(vmObject *d)
 {
     switch (d->type) {
-        case TYPE_INTEGER: return static_cast<vmLong*>(d);
-        case TYPE_LONG: return new vmLong(((vmInteger*)d)->val);
+        case TYPE_LONG: return static_cast<vmLong*>(d);
+        case TYPE_INTEGER: return new vmLong(((vmInteger*)d)->val);
         case TYPE_FLOAT: return new vmLong(((vmFloat*)d)->val);
         case TYPE_DOUBLE: return new vmLong(((vmDouble*)d)->val);
         case TYPE_REF: return toLong(((vmRef*)d)->val);
@@ -558,22 +581,22 @@ void VM::icmp(uint8_t oper)
 
     switch (oper) {
         case CMP_EQ:
-            if (v2->val == v1->val) vm_goto();
+            if (v2->val == v1->val) return vm_goto();
             break;
         case CMP_NE:
-            if (v2->val != v1->val) vm_goto();
+            if (v2->val != v1->val) return vm_goto();
             break;
         case CMP_GE:
-            if (v2->val >= v1->val) vm_goto();
+            if (v2->val >= v1->val) return vm_goto();
             break;
         case CMP_GT:
-            if (v2->val > v1->val) vm_goto();
+            if (v2->val > v1->val) return vm_goto();
             break;
         case CMP_LE:
-            if (v2->val <= v1->val) vm_goto();
+            if (v2->val <= v1->val) return vm_goto();
             break;
         case CMP_LT:
-            if (v2->val < v1->val) vm_goto();
+            if (v2->val < v1->val) return vm_goto();
             break;
         default:
             break;
@@ -596,13 +619,14 @@ void VM::vm_goto()
     int16_t target = read16(ptr + pc);
     //std::cout << "TARGET: " << target << " PC " << pc << "\n";
     pc += target - 1;
-    std::cout << " TARGET PC " << pc << "\n";
+    //std::cout << " TARGET PC " << pc << "\n";
 }
 
 void VM::lsub()
 {
     vmLong *v1 = toLong(stack->pop());
     vmLong *v2 = toLong(stack->pop());
+    //std::cout << " lsub " << v2->val <<  " " << v1->val <<  " " << (v2->val - v1->val) << "\n";
     stack->push(new vmLong(v2->val - v1->val));
 }
 

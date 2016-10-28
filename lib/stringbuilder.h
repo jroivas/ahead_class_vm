@@ -11,3 +11,13 @@ public:
 
     std::string val;
 };
+
+class ClassLangString : public vmClass
+{
+public:
+    ClassLangString();
+    virtual ~ClassLangString() {}
+    virtual vmClass *newInstance();
+
+    std::string val;
+};
