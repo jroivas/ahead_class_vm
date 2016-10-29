@@ -22,13 +22,15 @@ std::string typeName(vmObject *o) {
 //std::function<void(vmStack*)> vmClass::getFunction(std::string name)
 FunctionDesc *vmClass::getFunction(std::string name)
 {
-    for (auto m : methods) {
+    return methods[name];
+    /*for (auto m : methods) {
         if (m.first == name) {
             return m.second;
         }
     }
     //std::function<void(vmStack*)> r;
     return nullptr;
+    */
 }
 
 std::string formatType(std::string val, uint32_t array)

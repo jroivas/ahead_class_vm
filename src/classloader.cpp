@@ -4,19 +4,26 @@
 
 #include "utils.h"
 
-static std::vector<vmClass*> __classes;
+//static std::vector<vmClass*> __classes;
+static std::map<std::string, vmClass*> __classes;
 
 void registerClass(vmClass *cl)
 {
-    __classes.push_back(cl);
+    if (cl == nullptr) {
+        throw "Invalid class";
+    }
+    __classes[cl->name] = cl;
+    //__classes.push_back(cl);
 }
 
 vmClass *loadClass(std::string name)
 {
-    for (auto c : __classes) {
+    return __classes[name];
+    /*for (auto c : __classes) {
         if (c->name == name) return c;
     }
     return nullptr;
+    */
 }
 
 vmClassFile::vmClassFile(std::string fname)

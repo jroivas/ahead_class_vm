@@ -362,6 +362,7 @@ void VM::invokeVirtual()
     if (inst) {
         std::string fname = ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
         FunctionDesc *f = inst->getFunction(fname);
+        //std::cout << "FF " << f << " " << classname->str() << " " << fname << "\n";
         if (!f) {
             std::cout <<  "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
             throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
@@ -370,7 +371,8 @@ void VM::invokeVirtual()
             f->parse(((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str());
         }
         // FIXME constructing new stack
-        /*vmStack *st = new vmStack();
+        /*
+        vmStack *st = new vmStack();
         for (auto p : f->params) {
             st->insert(stack->pop());
         }
@@ -382,6 +384,7 @@ void VM::invokeVirtual()
         // Call
         f->func(stack);
         /*
+        f->func(st);
         if (f->returnType != "") {
             stack->push(st->pop());
         }
@@ -493,7 +496,8 @@ void VM::ldc_idx(uint16_t idx)
             stack->push(&((vmConstantDouble*)tmp)->val);
             break;
         case C_String: {
-            stack->push(&parseRefUtf8((vmConstantString*)tmp)->val);
+            vmString *s = &(parseRefUtf8((vmConstantString*)tmp)->val);
+            stack->push(s);
             //vmConstantUtf8 *n = parseRefUtf8((vmConstantString*)tmp);
             //stack->push(new vmString(n->str()));
             break;
@@ -521,7 +525,7 @@ void VM::astore_idx()
     uint8_t index = *(ptr + pc);
     pc++;
 
-    locals[index] = new vmRef(stack->pop());
+    locals[index] = stack->pop();
 }
 
 
@@ -574,7 +578,9 @@ vmDouble *VM::toDouble(vmObject *d)
 void VM::aload()
 {
     uint8_t index = *(ptr + pc);
-    stack->push(new vmRef(locals[index]));
+    pc++;
+    //stack->push(new vmRef(locals[index]));
+    stack->push(locals[index]);
 }
 
 void VM::iload(uint8_t index)
