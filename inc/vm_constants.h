@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdint>
 #include <cstring>
+#include "vm_object.h"
 
 enum vmConstants {
     C_Utf8 = 1,
@@ -101,8 +102,10 @@ public:
     vmConstantUtf8(vmConstants tag, uint16_t, const uint8_t *);
     ~vmConstantUtf8();
     uint16_t length;
-    uint8_t *bytes;
-    std::string str() { return std::string((const char*)bytes, length); }
+    //uint8_t *bytes;
+    //std::string str() { return std::string((const char*)bytes, length); }
+    std::string str() { return val.val; }
+    vmString val;
 };
 
 class vmConstantNameAndType : public vmConstantInfo
@@ -126,10 +129,12 @@ class vmConstantInteger : public vmConstantInfo
 public:
     vmConstantInteger(vmConstants tag, uint32_t v) : vmConstantInfo(tag)
     {
-        val = v;
+        //val = v;
+        val = vmInteger(v);
         size = 5;
     }
-    uint32_t val;
+    vmInteger val;
+    //uint32_t val;
 };
 
 class vmConstantFloat : public vmConstantInfo
@@ -137,13 +142,15 @@ class vmConstantFloat : public vmConstantInfo
 public:
     vmConstantFloat(vmConstants tag, uint32_t v) : vmConstantInfo(tag)
     {
+        union {
+            float fval;
+            uint32_t sval;
+        };
         sval = v;
+        val = vmFloat(fval);
         size = 5;
     }
-    union {
-        float val;
-        uint32_t sval;
-    };
+    vmFloat val;
 };
 
 class vmConstantLong : public vmConstantInfo
@@ -152,10 +159,12 @@ public:
     vmConstantLong(vmConstants tag, uint64_t v) : vmConstantInfo(tag)
     {
         index_inc = 2;
-        val = v;
+        //val = v;
+        val = vmLong(v);
         size = 9;
     }
-    uint64_t val;
+    vmLong val;
+    //uint64_t val;
 };
 
 class vmConstantDouble : public vmConstantInfo
@@ -163,12 +172,14 @@ class vmConstantDouble : public vmConstantInfo
 public:
     vmConstantDouble(vmConstants tag, uint64_t v) : vmConstantInfo(tag)
     {
+        union {
+            double fval;
+            uint64_t sval;
+        };
         index_inc = 2;
         sval = v;
+        val = vmDouble(fval);
         size = 9;
     }
-    union {
-        double val;
-        uint64_t sval;
-    };
+    vmDouble val;
 };

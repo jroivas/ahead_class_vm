@@ -42,15 +42,16 @@ int main(int argc, char **argv)
         uint16_t i = 1;
         vmConstantUtf8 *mu = static_cast<vmConstantUtf8*>(m.constant_pool[me->name_index]);
         if (mu) {
-            std::cout << "Method: " << mu->bytes << "\n";
+            std::cout << "Method: " << mu->str() << "\n";
         }
         /*
         */
         for (auto a : me->attributes) {
             vmConstantUtf8 *u = static_cast<vmConstantUtf8*>(m.constant_pool[a->name_index]);
             if (u != nullptr) {
-                std::cout << " Section: " << u->bytes << "\n";
-                if (strncmp((const char*)u->bytes, "Code", 4) == 0) {
+                std::cout << " Section: " << u->str() << "\n";
+                //if (strncmp((const char*)u->str(), "Code", 4) == 0) {
+                if (u->str().substr(0, 4) == "Code") {
                     vmCodeAttribute *code = new vmCodeAttribute(a);
                     /*
                     std::cout << "CL: " << code->code_length << "\n";

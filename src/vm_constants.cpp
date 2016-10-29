@@ -78,14 +78,16 @@ vmConstantUtf8::vmConstantUtf8(vmConstants tag, uint16_t l, const uint8_t *b)
 {
     length = l;
     size = l + 3;
-    bytes = new uint8_t [length + 1];
+    uint8_t *bytes = new uint8_t [length + 1];
     memset(bytes, 0, length + 1);
     memmove(bytes, b, length);
+    val = vmString(std::string((char*)bytes));
+    delete [] bytes;
     //std::cout << " SS " << l << " ";
     //std::cout << " " << bytes << " ";
 }
 
 vmConstantUtf8::~vmConstantUtf8()
 {
-    delete [] bytes;
+    //delete [] bytes;
 }

@@ -78,6 +78,7 @@ public:
 class vmString : public vmObject
 {
 public:
+    vmString() : vmObject(TYPE_STRING), val("") {}
     vmString(std::string v) : vmObject(TYPE_STRING), val(v) {}
     std::string val;
     static vmString* castFrom(vmObject* o)
@@ -90,6 +91,7 @@ public:
 class vmInteger : public vmObject
 {
 public:
+    vmInteger() : vmObject(TYPE_INTEGER), val(0) {}
     vmInteger(uint32_t v) : vmObject(TYPE_INTEGER), val(v) {}
     uint32_t val;
     static vmInteger* castFrom(vmObject* o)
@@ -102,6 +104,7 @@ public:
 class vmLong : public vmObject
 {
 public:
+    vmLong() : vmObject(TYPE_LONG), val(0) {}
     vmLong(uint64_t v) : vmObject(TYPE_LONG), val(v) {}
     uint64_t val;
     static vmLong* castFrom(vmObject* o)
@@ -114,6 +117,7 @@ public:
 class vmFloat : public vmObject
 {
 public:
+    vmFloat() : vmObject(TYPE_FLOAT), val(0.0) {}
     vmFloat(float v) : vmObject(TYPE_FLOAT), val(v) {}
     float val;
     static vmFloat* castFrom(vmObject* o)
@@ -126,6 +130,7 @@ public:
 class vmDouble : public vmObject
 {
 public:
+    vmDouble() : vmObject(TYPE_DOUBLE), val(0.0) {}
     vmDouble(float v) : vmObject(TYPE_DOUBLE), val(v) {}
     double val;
     static vmDouble* castFrom(vmObject* o)

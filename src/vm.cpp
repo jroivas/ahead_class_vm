@@ -430,9 +430,9 @@ void VM::getStatic()
         }
     }
 
-    std::cout << " getStatic class " << classname->bytes << "\n";
-    std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->bytes << "\n";
-    std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->bytes << "\n";
+    std::cout << " getStatic class " << classname->str() << "\n";
+    std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
+    std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
     throw "Invalid static";
 }
 
@@ -453,6 +453,7 @@ void VM::ldc_w()
 
 void VM::ldc_idx(uint16_t idx)
 {
+    // Constant create objects, use here as-is
     vmConstantInfo *tmp = cl->constant_pool[idx];
 
     switch (tmp->tag) {
@@ -644,7 +645,7 @@ void VM::vm_new()
     vmConstantClass *classref = parseClassConstant(idx);
     vmConstantUtf8 *classname = parseRefUtf8(classref);
     //std::cout << " New class type " << classname->bytes << "\n";
-    vmClass *c = loadClass((char*)classname->bytes);
+    vmClass *c = loadClass(classname->str());
     //std::cout << " New class base " << c << "\n";
     stack->push(c->newInstance());
 }
