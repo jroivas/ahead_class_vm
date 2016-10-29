@@ -34,9 +34,10 @@ int main(int argc, char **argv)
     vmStack *st = new vmStack();
     VM *vm = new VM(&m, st);
     // Init
-    new StringBuilder();
-    new PrintStream();
-    new ClassLangString();
+    std::vector<vmClass*> preload;
+    preload.push_back(new StringBuilder());
+    preload.push_back(new PrintStream());
+    preload.push_back(new ClassLangString());
 
     for (auto me : m.methods) {
         uint16_t i = 1;
@@ -72,6 +73,7 @@ int main(int argc, char **argv)
             ++i;
         }
     }
+    (void)preload;
 
     return 0;
 }

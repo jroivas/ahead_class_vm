@@ -23,9 +23,11 @@ VM::VM(vmClassFile *_cl, vmStack *_stack)
     stack(_stack),
     ptr(nullptr)
 {
+    /*
     for (uint8_t i = 0; i < 100; ++i) {
         locals.push_back(nullptr);
     }
+    */
 }
 
 void VM::addClassRef(vmClassFile *cl)
@@ -117,7 +119,7 @@ void VM::decode(uint8_t opcode)
         case 0x2a:
             if (locals.empty()) {
                 //solve "this" object from cl
-                locals.push_back(new vmObject(cl));
+                //locals.push_back(new vmObject(cl));
             }
             stack->push(locals[0]);
             break;
@@ -277,7 +279,7 @@ void VM::invokeSpecial()
         if (!f) {
             throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
         }
-        f(stack);
+        f->func(stack);
         return;
     }
 
@@ -302,9 +304,11 @@ void VM::invokeVirtual()
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
     std::cout << " Desc  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
     */
+    /*
     std::pair<std::string, std::string> rr = parseParams(((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str());
     std::vector<std::string> pp = parseField(rr.first);
     std::vector<std::string> r = parseField(rr.second);
+    */
     /*
     std::cout << " params: ";
     for (auto p : pp) {
@@ -341,6 +345,7 @@ void VM::invokeVirtual()
         }
     }
 
+    /*
     vmStack *st = new vmStack();
     for (auto p : pp) {
         st->insert(stack->pop());
@@ -348,6 +353,7 @@ void VM::invokeVirtual()
     // FIXME first pop off arguments, then pop objectref
     vmObject *objectRef = stack->pop();
     st->insert(objectRef);
+    */
 
     // FIXME new stack frame
     //vmClass *inst = dynamic_cast<vmClass*>(objectRef);
@@ -360,14 +366,27 @@ void VM::invokeVirtual()
             std::cout <<  "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
             throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
         }
-        f(st);
-        if (r.size()>0) {
+        if (!f->init) {
+            f->parse(((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str());
+        }
+        // FIXME constructing new stack
+        vmStack *st = new vmStack();
+        for (auto p : f->params) {
+            st->insert(stack->pop());
+        }
+
+        vmObject *objectRef = stack->pop();
+        st->insert(objectRef);
+
+        // Call
+        f->func(st);
+        if (f->returnType != "") {
             stack->push(st->pop());
         }
         return;
     }
 
-    std::cout << " obj " << typeName(objectRef) << "\n";
+    //std::cout << " obj " << typeName(objectRef) << "\n";
     std::cout << " Invoke class " << classname->str() << "\n";
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
     std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
@@ -491,7 +510,7 @@ void VM::lstore(uint8_t index)
 
 void VM::istore(uint8_t index)
 {
-    locals[index] = toInteger(stack->pop());
+    locals[index] = toInteger(stack->pop());;
 }
 
 void VM::astore_idx()
@@ -500,7 +519,6 @@ void VM::astore_idx()
     pc++;
 
     locals[index] = new vmRef(stack->pop());
-    //stack->push(new vmRef(locals[index]));
 }
 
 
@@ -508,10 +526,11 @@ vmInteger *VM::toInteger(vmObject *d)
 {
     switch (d->type) {
         case TYPE_INTEGER: return static_cast<vmInteger*>(d);
+        //case TYPE_INTEGER: return new vmInteger(static_cast<vmInteger*>(d)->val);
         case TYPE_LONG: return new vmInteger(((vmLong*)d)->val);
         case TYPE_FLOAT: return new vmInteger(((vmFloat*)d)->val);
         case TYPE_DOUBLE: return new vmInteger(((vmDouble*)d)->val);
-        case TYPE_REF: std::cout << " REF " << "\n"; return toInteger(((vmRef*)d)->val);
+        case TYPE_REF: std::cout << " REF "  << "\n"; return toInteger(((vmRef*)d)->val);
         default:
             std::cout << " PC " << pc << "\n";
             std::cout << " Convert from " << typeName(d) << "\n";
@@ -602,7 +621,8 @@ void VM::iinc()
     int8_t val = *(ptr + pc);
     pc++;
 
-    ((vmInteger*)locals[index])->val += val;
+    toInteger(locals[index])->val += val;
+    //((vmInteger*)locals[index])->val += val;
 }
 
 void VM::vm_goto()

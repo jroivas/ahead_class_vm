@@ -16,7 +16,7 @@ public:
 
     uint32_t pc;
     std::vector<vmClassFile *> classes;
-    std::vector<vmObject *> locals;
+    std::map<uint16_t, vmObject *> locals;
     vmClassFile * cl;
     vmStack *stack;
     uint8_t *ptr;

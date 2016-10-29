@@ -7,6 +7,10 @@
 #include <vector>
 #include <utility>
 
+#include <gc/gc.h>
+#include <gc/gc_cpp.h>
+#include <gc/gc_allocator.h>
+
 class vmClassFile;
 class vmStack;
 
@@ -41,6 +45,27 @@ void registerClass(vmClass *cl);
 std::vector<std::string> parseField(std::string);
 std::pair<std::string,std::string> parseParams(std::string);
 
+class FunctionDesc
+{
+public:
+    FunctionDesc(std::function<void(vmStack *)> f) : func(f), init(false) { }
+    std::function<void(vmStack *)> func;
+    std::string description;
+    std::string returnType;
+    std::vector<std::string> params;
+    bool init;
+    void parse(std::string desc) {
+        description = desc;
+        std::pair<std::string, std::string> rr = parseParams(description);
+        params = parseField(rr.first);
+        std::vector<std::string> ret = parseField(rr.second);
+        if (!ret.empty()) {
+            returnType = ret[0];
+        }
+        init = true;
+    }
+};
+
 class vmClass : public vmObject
 {
 public:
@@ -51,15 +76,18 @@ public:
     virtual vmClass *newInstance() = 0;
     bool isBaseClass() { return baseClass == nullptr; }
 
-    std::function<void(vmStack *)> getFunction(std::string name);
+    FunctionDesc *getFunction(std::string name);
     void setFunction(std::string name, std::function<void(vmStack *)> f) {
+        methods[name] = new FunctionDesc(f);
+    }
+    void setFunction(std::string name, FunctionDesc *f) {
         methods[name] = f;
     }
 
     std::string val;
     std::string name;
     vmClass *baseClass;
-    std::map<std::string, std::function<void(vmStack *)>> methods;
+    std::map<std::string, FunctionDesc*> methods;
 };
 
 class SystemPrinter : public vmClass
