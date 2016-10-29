@@ -361,7 +361,7 @@ void VM::invokeVirtual()
     vmClass *inst = loadClass(classname->str());
     if (inst) {
         std::string fname = ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
-        auto f = inst->getFunction(fname);
+        FunctionDesc *f = inst->getFunction(fname);
         if (!f) {
             std::cout <<  "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
             throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
@@ -370,19 +370,22 @@ void VM::invokeVirtual()
             f->parse(((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str());
         }
         // FIXME constructing new stack
-        vmStack *st = new vmStack();
+        /*vmStack *st = new vmStack();
         for (auto p : f->params) {
             st->insert(stack->pop());
         }
 
         vmObject *objectRef = stack->pop();
         st->insert(objectRef);
+        */
 
         // Call
-        f->func(st);
+        f->func(stack);
+        /*
         if (f->returnType != "") {
             stack->push(st->pop());
         }
+        */
         return;
     }
 

@@ -8,7 +8,7 @@ StringBuilder::StringBuilder()
 {
     setFunction("<init>", [&](vmStack *st) {
         this->val = "";
-        st->push(this);
+        //st->push(this);
     });
     setFunction("append", [&](vmStack *st) {
         vmObject *o = st->pop();
@@ -48,7 +48,7 @@ vmClass *StringBuilder::newInstance()
 ClassLangString::ClassLangString()
     : vmClass("java/lang/String")
 {
-    setFunction("<init>", [&](vmStack *st) { st->push(this); });
+    setFunction("<init>", [&](vmStack *st) { });
     setFunction("replaceAll", [&](vmStack *st) {
         vmString* rpl = vmString::castFrom(st->pop());
         vmString* hey = vmString::castFrom(st->pop());

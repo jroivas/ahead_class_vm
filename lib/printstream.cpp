@@ -5,7 +5,7 @@
 PrintStream::PrintStream()
     : vmClass("java/io/PrintStream")
 {
-    setFunction("<init>", [&](vmStack *st) { st->push(this); });
+    setFunction("<init>", [&](vmStack *st) { });
     setFunction("println", [](vmStack *st) {
         vmObject *o = st->pop();
         if (o->type == TYPE_STRING) {
