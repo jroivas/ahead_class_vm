@@ -458,20 +458,22 @@ void VM::ldc_idx(uint16_t idx)
 
     switch (tmp->tag) {
         case C_Integer:
-            stack->push(new vmInteger(((vmConstantInteger*)tmp)->val));
+            stack->push(&((vmConstantInteger*)tmp)->val);
+            //stack->push(new vmInteger(((vmConstantInteger*)tmp)->val));
             break;
         case C_Long:
-            stack->push(new vmLong(((vmConstantLong*)tmp)->val));
+            stack->push(&((vmConstantLong*)tmp)->val);
             break;
         case C_Float:
-            stack->push(new vmFloat(((vmConstantFloat*)tmp)->val));
+            stack->push(&((vmConstantFloat*)tmp)->val);
             break;
         case C_Double:
-            stack->push(new vmDouble(((vmConstantDouble*)tmp)->val));
+            stack->push(&((vmConstantDouble*)tmp)->val);
             break;
         case C_String: {
-            vmConstantUtf8 *n = parseRefUtf8((vmConstantString*)tmp);
-            stack->push(new vmString(n->str()));
+            stack->push(&parseRefUtf8((vmConstantString*)tmp)->val);
+            //vmConstantUtf8 *n = parseRefUtf8((vmConstantString*)tmp);
+            //stack->push(new vmString(n->str()));
             break;
         }
         default:
