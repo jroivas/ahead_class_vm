@@ -5,8 +5,8 @@
 PrintStream::PrintStream()
     : vmClass("java/io/PrintStream")
 {
-    setFunction("<init>", [&](vmStack *st) { });
-    setFunction("println", [](vmStack *st) {
+    setFunction("<init>", [](vmClass *thiz, vmStack *st) { });
+    setFunction("println", [](vmClass *thiz, vmStack *st) {
         vmObject *o = st->pop();
         if (o->type == TYPE_STRING) {
             //vmString *st = dynamic_cast<vmString*>(o);

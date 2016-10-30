@@ -5,7 +5,7 @@
 class StringBuilder : public vmClass
 {
 public:
-    StringBuilder();
+    StringBuilder(bool base=true);
     virtual ~StringBuilder() {}
     virtual vmClass *newInstance();
 

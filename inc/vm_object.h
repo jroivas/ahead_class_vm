@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <functional>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <utility>
 
@@ -48,8 +49,8 @@ std::pair<std::string,std::string> parseParams(std::string);
 class FunctionDesc
 {
 public:
-    FunctionDesc(std::function<void(vmStack *)> f) : func(f), init(false) { }
-    std::function<void(vmStack *)> func;
+    FunctionDesc(std::function<void(vmClass *, vmStack *)> f) : func(f), init(false) { }
+    std::function<void(vmClass *, vmStack *)> func;
     std::string description;
     std::string returnType;
     std::vector<std::string> params;
@@ -76,18 +77,25 @@ public:
     virtual vmClass *newInstance() = 0;
     bool isBaseClass() { return baseClass == nullptr; }
 
-    FunctionDesc *getFunction(std::string name);
-    void setFunction(std::string name, std::function<void(vmStack *)> f) {
-        methods[name] = new FunctionDesc(f);
+
+    inline FunctionDesc *getFunction(std::string name)
+    {
+        if (baseClass != nullptr) {
+            return baseClass->getFunction(name);
+        }
+        return methods[name];
     }
-    void setFunction(std::string name, FunctionDesc *f) {
-        methods[name] = f;
+
+    //FunctionDesc *getFunction(std::string name);
+    void setFunction(std::string name, std::function<void(vmClass *, vmStack *)> f) {
+        setFunction(name, new FunctionDesc(f));
     }
+    void setFunction(std::string name, FunctionDesc *f);
 
     std::string val;
     std::string name;
     vmClass *baseClass;
-    std::map<std::string, FunctionDesc*> methods;
+    std::unordered_map<std::string, FunctionDesc*> methods;
 };
 
 class SystemPrinter : public vmClass

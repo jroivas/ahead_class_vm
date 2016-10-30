@@ -3,22 +3,25 @@
 #include <algorithm>
 #include <vm_stack.h>
 
-StringBuilder::StringBuilder()
+StringBuilder::StringBuilder(bool base)
     : vmClass("java/lang/StringBuilder")
 {
-    setFunction("<init>", [&](vmStack *st) {
-        this->val = "";
+    if (base) {
+    setFunction("<init>", [](vmClass *thiz, vmStack *st) {
+        thiz->val = "";
         //st->push(this);
     });
-    setFunction("append", [&](vmStack *st) {
+
+    /*
+    FunctionDesc *f = new FunctionDesc([&](vmStack *st) {
         vmObject *o = st->pop();
-        /*vmObject *t = st->pop();
+        / *vmObject *t = st->pop();
         vmString* obj = vmString::castFrom(t);
         if (!obj) {
             std::cout << "*** ERROR: invalid obj target " << typeName(t) << "\n";
             throw "*** ERROR: Invalid obj target " + typeName(t);
         }
-        */
+        * /
         if (o->type == TYPE_STRING) {
             val += vmString::castFrom(o)->val;
         } else if (o->type == TYPE_LONG) {
@@ -33,14 +36,36 @@ StringBuilder::StringBuilder()
         }
         st->push(this);
     });
-    setFunction("toString", [&](vmStack *st) {
-        st->push(new vmString(val));
+    f->parse("(Ljava/lang/String;)Ljava/lang/StringBuilder;");
+    setFunction("append", f);
+    */
+
+    setFunction("append", [](vmClass *thiz, vmStack *st) {
+        vmObject *o = st->pop();
+        if (o->type == TYPE_STRING) {
+            thiz->val += vmString::castFrom(o)->val;
+        } else if (o->type == TYPE_LONG) {
+            thiz->val += std::to_string(vmLong::castFrom(o)->val);
+        } else if (o->type == TYPE_DOUBLE) {
+            thiz->val += std::to_string(vmDouble::castFrom(o)->val);
+        } else if (o->type == TYPE_INTEGER) {
+            thiz->val += std::to_string(vmInteger::castFrom(o)->val);
+        } else {
+            std::cout << "*** ERROR: Can't append " << typeName(o) << "\n";
+            throw "*** ERROR: Can't append " + typeName(o);
+        }
+        st->push(thiz);
     });
+    setFunction("toString", [](vmClass *thiz, vmStack *st) {
+        //std::cout << " THIS " << thiz << " " << thiz->val << "\n";
+        st->push(new vmString(thiz->val));
+    });
+    }
 }
 
 vmClass *StringBuilder::newInstance()
 {
-    vmClass *res = new StringBuilder();
+    vmClass *res = new StringBuilder(false);
     res->baseClass = this;
     return res;
 }
@@ -48,8 +73,8 @@ vmClass *StringBuilder::newInstance()
 ClassLangString::ClassLangString()
     : vmClass("java/lang/String")
 {
-    setFunction("<init>", [&](vmStack *st) { });
-    setFunction("replaceAll", [&](vmStack *st) {
+    setFunction("<init>", [](vmClass *thiz, vmStack *st) { });
+    setFunction("replaceAll", [](vmClass *thiz, vmStack *st) {
         vmString* rpl = vmString::castFrom(st->pop());
         vmString* hey = vmString::castFrom(st->pop());
         vmString* obj = vmString::castFrom(st->pop());

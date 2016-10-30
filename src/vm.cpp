@@ -253,6 +253,7 @@ vmConstantUtf8 *VM::parseRefUtf8(vmConstantInfo *p)
 void VM::invokeSpecial()
 {
     invokeVirtual();
+    /*
     return;
     uint16_t idx = read16(ptr + pc);
     pc += 2;
@@ -275,11 +276,22 @@ void VM::invokeSpecial()
     }
     if (objectRef->type == TYPE_CLASS) {
         vmClass *inst = static_cast<vmClass*>(objectRef);
+
+
         auto f = inst->getFunction(((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str());
+        FunctionDesc *f = inst->getFunction(fname);
+        //std::cout << "FF " << f << " " << classname->str() << " " << fname << "\n";
+        if (!f) {
+            std::cout <<  "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
+            throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
+        }
+        if (!f->init) {
+            f->parse(((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str());
+        }
         if (!f) {
             throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
         }
-        f->func(stack);
+        f->func(inst, stack);
         return;
     }
 
@@ -287,6 +299,7 @@ void VM::invokeSpecial()
     std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
     std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
     throw "Invalid call";
+    */
 }
 
 void VM::invokeVirtual()
@@ -299,45 +312,6 @@ void VM::invokeVirtual()
     vmConstantNameAndType *nametype = parseRefNameType(method);
     vmConstantUtf8 *classname = parseRefUtf8(classref);
 
-    /*
-    std::cout << " Invoke class " << classname->str() << "\n";
-    std::cout << " Name  " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
-    std::cout << " Desc  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
-    */
-    /*
-    std::pair<std::string, std::string> rr = parseParams(((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str());
-    std::vector<std::string> pp = parseField(rr.first);
-    std::vector<std::string> r = parseField(rr.second);
-    */
-    /*
-    std::cout << " params: ";
-    for (auto p : pp) {
-        std::cout << " " << p << " ";
-    }
-    std::cout << "\n";
-    if (r.size()>0){
-    std::cout << " retval: " << r[0] << "\n";
-    }
-    */
-
-
-    /*
-    if (classname->str() == "java/io/PrintStream") {
-        // FIXME real class and virtual methods
-        if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "println") {
-            // FIXME do not hardcode parameter handling
-            if (((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() == "(Ljava/lang/String;)V") {
-                //std::cout << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
-                vmObject *obj = stack->pop();
-                vmString *str = static_cast<vmString*>(obj);
-                std::cout << str->val << "\n";
-                return;
-            }
-            //return;
-        }
-    }
-    */
-
     if (classname->str() == "java/lang/Object") {
         if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "<init>") {
             stack->push(new vmObject());
@@ -345,19 +319,6 @@ void VM::invokeVirtual()
         }
     }
 
-    /*
-    vmStack *st = new vmStack();
-    for (auto p : pp) {
-        st->insert(stack->pop());
-    }
-    // FIXME first pop off arguments, then pop objectref
-    vmObject *objectRef = stack->pop();
-    st->insert(objectRef);
-    */
-
-    // FIXME new stack frame
-    //vmClass *inst = dynamic_cast<vmClass*>(objectRef);
-    //vmClass *inst = dynamic_cast<vmClass*>(objectRef);
     vmClass *inst = loadClass(classname->str());
     if (inst) {
         std::string fname = ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
@@ -382,7 +343,7 @@ void VM::invokeVirtual()
         */
 
         // Call
-        f->func(stack);
+        f->func(inst, stack);
         /*
         f->func(st);
         if (f->returnType != "") {
@@ -597,6 +558,8 @@ void VM::icmp(uint8_t oper)
 {
     vmInteger *v1 = toInteger(stack->pop());
     vmInteger *v2 = toInteger(stack->pop());
+
+    //std::cout << " CMP " << v2->val << " " << oper << " " << v1->val << "\n";
 
     switch (oper) {
         case CMP_EQ:

@@ -20,8 +20,12 @@ std::string typeName(vmObject *o) {
 #include <iostream>
 
 //std::function<void(vmStack*)> vmClass::getFunction(std::string name)
+#if 0
 FunctionDesc *vmClass::getFunction(std::string name)
 {
+    if (baseClass != nullptr) {
+        return baseClass->getFunction(name);
+    }
     return methods[name];
     /*for (auto m : methods) {
         if (m.first == name) {
@@ -31,6 +35,18 @@ FunctionDesc *vmClass::getFunction(std::string name)
     //std::function<void(vmStack*)> r;
     return nullptr;
     */
+}
+#endif
+
+void vmClass::setFunction(std::string name, FunctionDesc *f)
+{
+    if (baseClass == nullptr) {
+    /*if (baseClass != nullptr && baseClass != this) {
+        baseClass->setFunction(name, f);
+    } else {
+        */
+        methods[name] = f;
+    }
 }
 
 std::string formatType(std::string val, uint32_t array)
