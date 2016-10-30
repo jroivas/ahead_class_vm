@@ -12,18 +12,13 @@ void registerClass(vmClass *cl)
     if (cl == nullptr) {
         throw "Invalid class";
     }
+    if (cl->baseClass != nullptr) return;
     __classes[cl->name] = cl;
-    //__classes.push_back(cl);
 }
 
 vmClass *loadClass(std::string name)
 {
     return __classes[name];
-    /*for (auto c : __classes) {
-        if (c->name == name) return c;
-    }
-    return nullptr;
-    */
 }
 
 vmClassFile::vmClassFile(std::string fname)

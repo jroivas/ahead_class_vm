@@ -66,7 +66,11 @@ StringBuilder::StringBuilder(bool base)
 vmClass *StringBuilder::newInstance()
 {
     vmClass *res = new StringBuilder(false);
-    res->baseClass = this;
+    vmClass *b = this;
+    while (b->baseClass != nullptr) {
+        b = b->baseClass;
+    }
+    res->baseClass = b;
     return res;
 }
 

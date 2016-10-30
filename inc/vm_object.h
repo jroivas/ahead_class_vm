@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 #include <utility>
+#include <iostream>
 
 #include <gc/gc.h>
 #include <gc/gc_cpp.h>
