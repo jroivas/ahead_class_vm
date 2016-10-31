@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include "classloader.h"
 #include "vm_stack.h"
@@ -13,6 +14,7 @@ public:
     void addClassRef(vmClassFile *);
 
     bool execute(vmCodeAttribute *code);
+    std::string transcompile(std::string name, vmCodeAttribute *code);
 
     uint32_t pc;
     std::vector<vmClassFile *> classes;
@@ -23,6 +25,7 @@ public:
 
 private:
     uint8_t fetch();
+    uint16_t fetch16();
     void decode(uint8_t);
     void invokeSpecial();
     void invokeVirtual();
@@ -47,6 +50,14 @@ private:
     void vm_goto();
     void vm_new();
 
+    std::string indent();
+    void iin() { ++_indent; }
+    void din() { --_indent; }
+    std::string fixName(std::string name);
+    std::string genCode(uint8_t opcode);
+    std::string gen_iconst(int16_t val);
+    std::string gen_invokeVirtual();
+
     vmInteger *toInteger(vmObject *);
     vmLong *toLong(vmObject *);
     vmDouble *toDouble(vmObject *);
@@ -56,4 +67,6 @@ private:
     vmConstantNameAndType *parseRefNameType(vmConstantRef *ref);
     vmConstantUtf8 *parseRefUtf8(vmConstantInfo *ref);
     vmConstantClass *parseClassConstant(uint16_t idx);
+    uint8_t _indent;
+    std::vector<std::string> loadstack;
 };

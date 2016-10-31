@@ -61,7 +61,8 @@ int main(int argc, char **argv)
                     }
                     std::cout << std::dec << "\n";
                     */
-                    vm->execute(code);
+                    //vm->execute(code);
+                    std::cout << vm->transcompile(mu->str(), code);
                 } else {
                     //std::cout << i << " " << u->bytes << "\n";
                     for (uint32_t l = 0; l< a->length; ++l) {

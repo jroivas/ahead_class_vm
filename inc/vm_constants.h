@@ -104,7 +104,7 @@ public:
     uint16_t length;
     //uint8_t *bytes;
     //std::string str() { return std::string((const char*)bytes, length); }
-    inline std::string str() { return val.val; }
+    inline std::string str() const { return val.val; }
     vmString val;
 };
 
