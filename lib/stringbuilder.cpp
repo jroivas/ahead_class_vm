@@ -4,7 +4,7 @@
 #include <vm_stack.h>
 
 StringBuilder::StringBuilder(bool base)
-    : vmClass("java/lang/StringBuilder")
+    : vmClass("java/lang/StringBuilder", base)
 {
     if (base) {
     setFunction("<init>", [](vmClass *clz, vmStack *st) {
