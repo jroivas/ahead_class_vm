@@ -59,7 +59,6 @@ void vmStack::pushInteger(nInteger v)
     assert_stack_size_push();
     m_types[size] = ST_INT;
     m_data[size++] = static_cast<uint64_t>(v);
-    //m_stack.push_back(StackData(v));
 }
 
 void vmStack::pushLong(nLong v)
@@ -67,7 +66,6 @@ void vmStack::pushLong(nLong v)
     assert_stack_size_push();
     m_types[size] = ST_LONG;
     m_data[size++] = static_cast<uint64_t>(v);
-    //m_stack.push_back(StackData(v));
 }
 
 void vmStack::pushFloat(nFloat v)
@@ -75,7 +73,6 @@ void vmStack::pushFloat(nFloat v)
     assert_stack_size_push();
     m_types[size] = ST_FLOAT;
     memcpy(&m_data[size++], &v, sizeof(nFloat));
-    //m_stack.push_back(StackData(v));
 }
 
 void vmStack::pushDouble(nDouble v)
@@ -83,7 +80,6 @@ void vmStack::pushDouble(nDouble v)
     assert_stack_size_push();
     m_types[size] = ST_DOUBLE;
     memcpy(&m_data[size++], &v, sizeof(nDouble));
-    //m_stack.push_back(StackData(v));
 }
 
 void vmStack::pushObject(vmObject *v)
@@ -91,7 +87,6 @@ void vmStack::pushObject(vmObject *v)
     assert_stack_size_push();
     m_types[size] = ST_OBJ;
     m_data[size++] = reinterpret_cast<uint64_t>(v);
-    //m_stack.push_back(StackData(v));
 }
 
 nInteger vmStack::popInteger()
@@ -99,11 +94,6 @@ nInteger vmStack::popInteger()
     assert_stack_size_pop();
     if (m_types[--size] != ST_INT) throw "Invalid type";
     return static_cast<nInteger>(m_data[size]);
-    /*
-    StackData v = m_stack.pop_back();
-    if (v.type != ST_INT) throw "Invalid type";
-    return v.val_i;
-    */
 }
 
 nLong vmStack::popLong()
@@ -111,11 +101,6 @@ nLong vmStack::popLong()
     assert_stack_size_pop();
     if (m_types[--size] != ST_LONG) throw "Invalid type";
     return static_cast<nLong>(m_data[size]);
-/*
-    StackData v = m_stack.pop_back();
-    if (v.type != ST_LONG) throw "Invalid type";
-    return v.val_l;
-*/
 }
 
 
@@ -126,20 +111,6 @@ nFloat vmStack::popFloat()
     nFloat v;
     memcpy(&v, &m_data[size], sizeof(nFloat));
     return v;
-    /*
-    union {
-        nFloat f;
-        uint64_t u;
-    };
-    u = m_data[size];
-    return f;
-    */
-    //return static_cast<nFloat>(m_data[size]);
-/*
-    StackData v = m_stack.pop_back();
-    if (v.type != ST_FLOAT) throw "Invalid type";
-    return v.val_f;
-*/
 }
 
 nDouble vmStack::popDouble()
@@ -149,21 +120,6 @@ nDouble vmStack::popDouble()
     nDouble v;
     memcpy(&v, &m_data[size], sizeof(nDouble));
     return v;
-/*
-    union {
-        nDouble f;
-        uint64_t u;
-    };
-    u = m_data[size];
-    return f;
-*/
-    //f = v;
-    //return static_cast<nDouble>(m_data[size]);
-/*
-    StackData v = m_stack.pop_back();
-    if (v.type != ST_DOUBLE) throw "Invalid type";
-    return v.val_d;
-*/
 }
 
 vmObject *vmStack::popObject()
@@ -171,9 +127,4 @@ vmObject *vmStack::popObject()
     assert_stack_size_pop();
     if (m_types[--size] != ST_OBJ) throw "Invalid type";
     return reinterpret_cast<vmObject*>(m_data[size]);
-/*
-    StackData v = m_stack.pop_back();
-    if (v.type != ST_OBJECT) throw "Invalid type";
-    return v.val_o;
-*/
 }

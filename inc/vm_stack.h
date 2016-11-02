@@ -13,26 +13,6 @@ enum {
     ST_OBJ
 };
 
-/*
-class StackData {
-public:
-    StackData(nInteger v) : val_i(v), type(ST_INT) { }
-    StackData(nLong v) : val_l(v), type(ST_INT) { }
-    StackData(nFloat v) : val_f(v), type(ST_FLOAT) { }
-    StackData(nDouble v) : val_f(v), type(ST_DOUBLE) { }
-    StackData(vmObject *v) : val_o(v), type(ST_OBJ) { }
-
-    union {
-        nInteger val_i;
-        nLong val_l;
-        nFloat val_f;
-        nDouble val_d;
-        vmObject *val_o;
-    };
-    uint8_t type;
-};
-*/
-
 class vmStack
 {
 public:
@@ -61,7 +41,6 @@ public:
     uint32_t max_size;
 private:
     std::vector<vmObject*> stack;
-    //std::vector<StackData> m_stack;
     uint64_t *m_data;
     uint8_t *m_types;
 };
