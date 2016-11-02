@@ -92,4 +92,5 @@ private:
 public:
     std::vector<std::string> loadstack;
     std::map<std::string, std::string> loaded_classes;
+    std::map<std::string, std::pair<std::string, std::string>> loaded_func;
 };

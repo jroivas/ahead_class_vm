@@ -88,7 +88,16 @@ std::string VM::transcompile(std::string name, vmCodeAttribute *code)
         din();
         pre += indent() + "}\n";
     }
+    for (auto lc : loaded_func) {
+        pre += indent() + "FunctionDesc *" + lc.first + " = " + lc.second.first + "->getFunction(\"" + lc.second.second + "\");\n";
+        pre += indent() + "if (!" + lc.first + ") {\n";
+        iin();
+        pre += indent() + "throw \"Invalid function on " + lc.second.first + ": " + lc.second.second + "\";\n";
+        din();
+        pre += indent() + "}\n";
+    }
     loaded_classes.erase(loaded_classes.begin(), loaded_classes.end());
+    loaded_func.erase(loaded_func.begin(), loaded_func.end());
 
     din();
     res += indent() + "}\n";
@@ -488,12 +497,18 @@ std::string VM::gen_invokeVirtual()
     loadstack.push_back(classname->str());
     std::string res = "";
     //uint32_t ii = ++_temp;
-    uint32_t fi = ++_temp;
+    //uint32_t fi = ++_temp;
     res += indent() + "{\n";
     iin();
     std::string n = fixName(classname->str());
     loaded_classes[classname->str()] = n;
 
+    std::string f = ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
+    std::string c = n + "__" + fixName(f);
+    loaded_func[c] = std::pair<std::string, std::string>(n, f);
+
+    res += indent() + c + "->func(" + n + ", stack);\n";
+    /*
     res += indent() + "FunctionDesc *__f" + std::to_string(fi) + " = " + n + "->getFunction(\"" + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str()+ "\");\n";
     res += indent() + "if (!__f" + std::to_string(fi) + ") {\n";
     iin();
@@ -501,6 +516,7 @@ std::string VM::gen_invokeVirtual()
     din();
     res += indent() + "}\n";
     res += indent() + "__f" + std::to_string(fi) + "->func(" + n + ", stack);\n";
+    */
 
     /*
     res += indent() + "vmClass *__inst" + std::to_string(ii) + " = loadClass(\"" + classname->str() + "\");\n";
