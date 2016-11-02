@@ -52,6 +52,7 @@ std::string VM::fixName(std::string name)
     std::string res = "";
     for (auto c : name) {
         if (c == '<' or c == '>') res += '_';
+        else if (c == '/') res += '_';
         else res += c;
     }
     return res;
@@ -60,13 +61,14 @@ std::string VM::fixName(std::string name)
 std::string VM::transcompile(std::string name, vmCodeAttribute *code)
 {
     std::string res = "";
+    std::string pre = "";
     std::string fname = fixName(name); 
     if (fname == "main") fname = "class_main";
-    res += indent() + "vmObject *" + fname +  "() {\n";
+    pre += indent() + "vmObject *" + fname +  "() {\n";
 
     iin();
-    res += indent() + "vmStack *stack = new vmStack(" + std::to_string(code->max_stack) + ");\n";
-    res += indent() + "vmObject *retVal = nullptr;\n";
+    pre += indent() + "vmStack *stack = new vmStack(" + std::to_string(code->max_stack) + ");\n";
+    pre += indent() + "vmObject *retVal = nullptr;\n";
     for (uint16_t locals = 0; locals < code->max_locals; locals++) {
         res += indent() + "vmLocal local" + std::to_string(locals) + ";\n";
     }
@@ -78,10 +80,20 @@ std::string VM::transcompile(std::string name, vmCodeAttribute *code)
         res += genCode(opcode, fname);
     }
 
+    for (auto lc : loaded_classes) {
+        pre += indent() + "vmClass *" + lc.second + " = loadClass(\"" + lc.first + "\");\n";
+        pre += indent() + "if (!" + lc.second + ") {\n";
+        iin();
+        pre += indent() + "throw \"Can't load class: " + lc.first +"\";\n";
+        din();
+        pre += indent() + "}\n";
+    }
+    loaded_classes.erase(loaded_classes.begin(), loaded_classes.end());
+
     din();
     res += indent() + "}\n";
 
-    return res;
+    return pre + res;
 }
 
 std::string VM::genCode(uint8_t opcode, std::string &name)
@@ -389,8 +401,12 @@ std::string VM::gen_new()
     std::string res;
     res += indent() + "{\n";
     iin();
-    res += indent() + "vmClass *c = loadClass(\"" + classname->str() + "\");\n";
-    res += indent() + "stack->push(c->newInstance());\n";
+    std::string n = fixName(classname->str());
+    loaded_classes[classname->str()] = n;
+    //res += indent() + "vmClass *c = loadClass(\"" + classname->str() + "\");\n";
+    //res += indent() + "vmClass *c = loadClass(\"" + classname->str() + "\");\n";
+    //res += indent() + "stack->push(c->newInstance());\n";
+    res += indent() + "stack->push(" + n + "->newInstance());\n";
     din();
     res += indent() + "}\n";
     return res;
@@ -443,9 +459,14 @@ std::string VM::gen_getStatic()
             if (((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() == "Ljava/io/PrintStream;") {
                 res += indent() + "{\n";
                 iin();
-                res += indent() + "vmClass *cl = loadClass(\"java/io/PrintStream\");\n";
+                std::string n = "java_io_PrintStream";
+                loaded_classes["java/io/PrintStream"] = n;
+                /*
+                //res += indent() + "vmClass *cl = loadClass(\"java/io/PrintStream\");\n";
                 res += indent() + "if (!cl) throw \"Can't load class\";\n";
                 res += indent() + "stack->push(cl);\n";
+                */
+                res += indent() + "stack->push(" + n + ");\n";
                 din();
                 res += indent() + "}\n";
                 return res;
@@ -466,10 +487,22 @@ std::string VM::gen_invokeVirtual()
 
     loadstack.push_back(classname->str());
     std::string res = "";
-    uint32_t ii = ++_temp;
+    //uint32_t ii = ++_temp;
     uint32_t fi = ++_temp;
     res += indent() + "{\n";
     iin();
+    std::string n = fixName(classname->str());
+    loaded_classes[classname->str()] = n;
+
+    res += indent() + "FunctionDesc *__f" + std::to_string(fi) + " = " + n + "->getFunction(\"" + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str()+ "\");\n";
+    res += indent() + "if (!__f" + std::to_string(fi) + ") {\n";
+    iin();
+    res += indent() + "throw \"Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() + "\";\n";
+    din();
+    res += indent() + "}\n";
+    res += indent() + "__f" + std::to_string(fi) + "->func(" + n + ", stack);\n";
+
+    /*
     res += indent() + "vmClass *__inst" + std::to_string(ii) + " = loadClass(\"" + classname->str() + "\");\n";
     res += indent() + "if (__inst" + std::to_string(ii) + ") {\n";
     iin();
@@ -487,6 +520,7 @@ std::string VM::gen_invokeVirtual()
     res += indent() + "throw \"Invalid class: " + classname->str() + "\";\n";
     din();
     res += indent() + "}\n";
+    */
     din();
     res += indent() + "}\n";
     return res;

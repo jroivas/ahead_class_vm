@@ -24,6 +24,7 @@ std::string solveClassObjectName(std::string name)
     if (name == "java/io/PrintStream") return "PrintStream";
     if (name == "java/lang/StringBuilder") return "StringBuilder";
     if (name == "java/lang/String") return "ClassLangString";
+    if (name == "java/lang/Object") return "LangObject";
     /* FIXME
     for (auto c : __classes) {
         if (c.first == name) return "";

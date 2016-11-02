@@ -91,4 +91,5 @@ private:
     uint32_t _temp;
 public:
     std::vector<std::string> loadstack;
+    std::map<std::string, std::string> loaded_classes;
 };

@@ -5,5 +5,6 @@
 #include <dynload.h>
 #include <time.h>
 
+#include <langobject.h>
 #include <printstream.h>
 #include <stringbuilder.h>
