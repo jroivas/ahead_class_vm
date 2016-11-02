@@ -10,7 +10,7 @@ StringBuilder::StringBuilder(bool base)
     setFunction("<init>", [](vmClass *clz, vmStack *st) {
         vmClass *thiz = vmClass::castFrom(st->pop());
         thiz->val = "";
-        //st->push(this);
+        //st->push(thiz);
     });
 
     /*

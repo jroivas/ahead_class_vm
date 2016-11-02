@@ -259,7 +259,7 @@ std::string VM::gen_iload(int16_t index)
 std::string VM::gen_aload()
 {
     uint8_t index = fetch();
-    return indent() + "stack->pushObject(&local" + std::to_string(index) + ");";
+    return indent() + "stack->pushObject(local" + std::to_string(index) + ".val_obj);\n";
 }
 
 std::string VM::gen_astore_idx()
