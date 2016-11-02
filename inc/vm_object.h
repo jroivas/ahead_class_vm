@@ -78,8 +78,11 @@ public:
 class vmClass : public vmObject
 {
 public:
-    vmClass(std::string n, bool doReg=true) : vmObject(TYPE_CLASS), name(n), baseClass(nullptr) {
-        if (doReg) registerClass(this);
+    vmClass(std::string n, bool doReg=true) : vmObject(TYPE_CLASS), /* name(n),*/ baseClass(nullptr) {
+        if (doReg) {
+            name = n;
+            registerClass(this);
+        }
     }
     virtual ~vmClass() {}
     virtual vmClass *newInstance() = 0;
