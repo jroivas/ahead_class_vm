@@ -28,8 +28,8 @@ enum vmType {
     TYPE_CLASS
 };
 
-typedef uint32_t nInteger;
-typedef uint64_t nLong;
+typedef int32_t nInteger;
+typedef int64_t nLong;
 typedef float nFloat;
 typedef double nDouble;
 typedef std::string nString;
@@ -85,6 +85,11 @@ public:
     virtual vmClass *newInstance() = 0;
     bool isBaseClass() { return baseClass == nullptr; }
 
+    static vmClass* castFrom(vmObject* o)
+    {
+        if (!o) throw "Nullptr";
+        return o->type == TYPE_CLASS ? static_cast<vmClass *>(o) : nullptr;
+    }
 
     inline FunctionDesc *getFunction(std::string name)
     {

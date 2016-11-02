@@ -3,7 +3,7 @@
 #include <cstring>
 
 #define assert_stack_size_push() if (size>=max_size) {\
-std::cout<<  "PUSH: Out of bounds" << size << " " << max_size << "\n";\
+std::cout<<  "PUSH: Out of bounds " << size << " " << max_size << "\n";\
 throw "PUSH: Out of bounds";\
 }
 #define assert_stack_size_pop() if (size==0) throw "POP: Out of bounds";
@@ -139,7 +139,9 @@ nLong vmStack::popLong()
 {
     assert_stack_size_pop();
     if (m_types[--size] != ST_LONG) throw "Invalid type";
-    return static_cast<nLong>(m_data[size]);
+    nLong v= static_cast<nLong>(m_data[size]);
+    return v;
+    //return static_cast<nLong>(m_data[size]);
 }
 
 

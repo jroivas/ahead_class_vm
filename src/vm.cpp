@@ -64,7 +64,7 @@ std::string VM::transcompile(std::string name, vmCodeAttribute *code)
     res += indent() + "vmObject *" + fname +  "() {\n";
 
     iin();
-    res += indent() + "vmStack *stack = new vmStack(100 * " + std::to_string(code->max_stack) + ");\n";
+    res += indent() + "vmStack *stack = new vmStack(" + std::to_string(code->max_stack) + ");\n";
     res += indent() + "vmObject *retVal = nullptr;\n";
     for (uint16_t locals = 0; locals < code->max_locals; locals++) {
         res += indent() + "vmLocal local" + std::to_string(locals) + ";\n";
@@ -289,7 +289,13 @@ std::string VM::gen_lsub()
 {
     std::string res = "";
 
-    res += indent() + "stack->pushLong(-stack->popLong() + stack->popLong());\n";
+    res += indent() + "{\n";
+    iin();
+    res += indent() + "nLong v1 = stack->popLong();\n";
+    res += indent() + "nLong v2 = stack->popLong();\n";
+    res += indent() + "stack->pushLong(v2 - v1);\n";
+    din();
+    res += indent() + "}\n";
     /*
     res += indent() + "vmLong v1 = toLong(stack->pop());\n";
     res += indent() + "vmLong v2 = toLong(stack->pop());\n";

@@ -7,7 +7,8 @@ StringBuilder::StringBuilder(bool base)
     : vmClass("java/lang/StringBuilder")
 {
     if (base) {
-    setFunction("<init>", [](vmClass *thiz, vmStack *st) {
+    setFunction("<init>", [](vmClass *clz, vmStack *st) {
+        vmClass *thiz = vmClass::castFrom(st->pop());
         thiz->val = "";
         //st->push(this);
     });
@@ -40,8 +41,9 @@ StringBuilder::StringBuilder(bool base)
     setFunction("append", f);
     */
 
-    setFunction("append", [](vmClass *thiz, vmStack *st) {
+    setFunction("append", [](vmClass *clz, vmStack *st) {
         vmObject *o = st->pop();
+        vmClass *thiz = vmClass::castFrom(st->pop());
         if (o->type == TYPE_STRING) {
             thiz->val += vmString::castFrom(o)->val;
         } else if (o->type == TYPE_LONG) {
@@ -56,7 +58,8 @@ StringBuilder::StringBuilder(bool base)
         }
         st->push(thiz);
     });
-    setFunction("toString", [](vmClass *thiz, vmStack *st) {
+    setFunction("toString", [](vmClass *clz, vmStack *st) {
+        vmClass *thiz = vmClass::castFrom(st->pop());
         //std::cout << " THIS " << thiz << " " << thiz->val << "\n";
         st->push(new vmString(thiz->val));
     });
@@ -77,7 +80,10 @@ vmClass *StringBuilder::newInstance()
 ClassLangString::ClassLangString()
     : vmClass("java/lang/String")
 {
-    setFunction("<init>", [](vmClass *thiz, vmStack *st) { });
+    setFunction("<init>", [](vmClass *clz, vmStack *st) {
+        vmClass *thiz = vmClass::castFrom(st->pop());
+        (void)thiz;
+    });
     setFunction("replaceAll", [](vmClass *thiz, vmStack *st) {
         vmString* rpl = vmString::castFrom(st->pop());
         vmString* hey = vmString::castFrom(st->pop());

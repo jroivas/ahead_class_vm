@@ -5,8 +5,14 @@
 PrintStream::PrintStream()
     : vmClass("java/io/PrintStream")
 {
-    setFunction("<init>", [](vmClass *thiz, vmStack *st) { });
-    setFunction("println", [](vmClass *thiz, vmStack *st) {
+    setFunction("<init>", [](vmClass *clz, vmStack *st) {
+        vmClass *thiz = vmClass::castFrom(st->pop());
+        (void)thiz;
+        // FIXME use out object
+        vmClass *out = vmClass::castFrom(st->pop());
+        (void)out;
+    });
+    setFunction("println", [](vmClass *clz, vmStack *st) {
         vmObject *o = st->pop();
         if (o->type == TYPE_STRING) {
             //vmString *st = dynamic_cast<vmString*>(o);
