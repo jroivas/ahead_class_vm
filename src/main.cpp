@@ -20,6 +20,7 @@ int main(int argc, char **argv)
         std::cout << "ERROR: Parsing of " << argv[1] << " failed!\n";
         return 2;
     }
+    /*
     std::cout << "Parse? " << (ok ? "ok" :"fail") << "\n";
     std::cout << "Version " << m.major_version << " " << m.minor_version << "\n";
     std::cout << "Access flags " << m.access_flags << "\n";
@@ -29,8 +30,12 @@ int main(int argc, char **argv)
     std::cout << "Fields " << m.fields_count << "\n";
     std::cout << "Methods " << m.methods_count << "\n";
     std::cout << "Attrib " << m.attributes_count << "\n";
-    /*
     */
+    std::cout << "#include <vm_object.h>\n";
+    std::cout << "#include <vm_stack.h>\n";
+    std::cout << "#include <dynload.h>\n";
+    std::cout << "#include <time.h>\n";
+
     vmStack *st = new vmStack();
     VM *vm = new VM(&m, st);
     // Init
@@ -42,15 +47,15 @@ int main(int argc, char **argv)
     for (auto me : m.methods) {
         uint16_t i = 1;
         vmConstantUtf8 *mu = static_cast<vmConstantUtf8*>(m.constant_pool[me->name_index]);
+        /*
         if (mu) {
             std::cout << "Method: " << mu->str() << "\n";
         }
-        /*
         */
         for (auto a : me->attributes) {
             vmConstantUtf8 *u = static_cast<vmConstantUtf8*>(m.constant_pool[a->name_index]);
             if (u != nullptr) {
-                std::cout << " Section: " << u->str() << "\n";
+                //std::cout << " Section: " << u->str() << "\n";
                 //if (strncmp((const char*)u->str(), "Code", 4) == 0) {
                 if (u->str().substr(0, 4) == "Code") {
                     vmCodeAttribute *code = new vmCodeAttribute(a);
@@ -65,16 +70,22 @@ int main(int argc, char **argv)
                     std::cout << vm->transcompile(mu->str(), code);
                 } else {
                     //std::cout << i << " " << u->bytes << "\n";
+                    std::cout << "/*\n";
                     for (uint32_t l = 0; l< a->length; ++l) {
                         std::cout << " " << std::hex << (unsigned int)a->info[l];
                     }
-                    std::cout << "\n";
+                    std::cout << "\n*/\n";
                 }
             }
             ++i;
         }
     }
     (void)preload;
+    std::cout << "int main(int argc, char **argv)\n{\n";
+    std::cout << "    int ret = 0;\n";
+    std::cout << "    class_main();\n";
+    std::cout << "    return ret;\n";
+    std::cout << "}\n";
 
     return 0;
 }

@@ -20,11 +20,12 @@ public:
     vmStack(uint32_t);
 
     void push(vmObject *obj);
-    void insert(vmObject *obj);
+    //void insert(vmObject *obj);
     vmObject *pop();
     vmObject *peek();
     uint8_t peekType() const;
 
+    void dup();
     void pushInteger(nInteger v);
     void pushLong(nLong v);
     void pushFloat(nFloat v);

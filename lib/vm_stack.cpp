@@ -23,35 +23,70 @@ vmStack::vmStack(uint32_t s)
 
 void vmStack::push(vmObject *obj)
 {
+#if 0
     ++size;
     //std::cout << " >> PSH " << obj << " " << typeName(obj) << " SZ " << size << "\n";
     stack.push_back(obj);
+#endif
+    pushObject(obj);
 }
 
+#if 0
 void vmStack::insert(vmObject *obj)
 {
     ++size;
     stack.insert(stack.begin(), obj);
 }
+#endif
 
 vmObject *vmStack::pop()
 {
+    switch (peekType()) {
+        case ST_EMPTY: throw "Empty stack";
+        case ST_INT: return new vmInteger(popInteger());
+        case ST_LONG: return new vmLong(popLong());
+        case ST_FLOAT: return new vmFloat(popFloat());
+        case ST_DOUBLE: return new vmDouble(popDouble());
+        case ST_OBJ: return popObject();
+    }
+#if 0
     vmObject *tmp = stack.back();
     --size;
     //std::cout << " << POP " << tmp << " " << typeName(tmp) <<  " SZ " << size << "\n";
     stack.pop_back();
     return tmp;
+#endif
+    return nullptr;
 }
 
 vmObject *vmStack::peek()
 {
-    return stack.back();
+    if (size == 0) return nullptr;
+    uint64_t v = m_data[size - 1];
+    switch (peekType()) {
+        case ST_INT: return new vmInteger(v);
+        case ST_LONG: return new vmLong(v);
+        case ST_FLOAT: return new vmFloat(v);
+        case ST_DOUBLE: return new vmDouble(v);
+        case ST_OBJ: return reinterpret_cast<vmObject*>(v);
+    }
+    return nullptr;
 }
 
 uint8_t vmStack::peekType() const
 {
     if (size == 0) return ST_EMPTY;
     return m_types[size - 1];
+}
+
+void vmStack::dup()
+{
+    assert_stack_size_pop();
+    assert_stack_size_push();
+
+    m_types[size] = m_types[size - 1];
+    m_data[size] = m_data[size - 1];
+    ++size;
 }
 
 void vmStack::pushInteger(nInteger v)

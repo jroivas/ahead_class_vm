@@ -15,9 +15,6 @@ class vmInterfaceInfo
 {
 };
 
-void registerClass(vmClass *);
-vmClass *loadClass(std::string name);
-
 class vmClassFile {
 public:
     vmClassFile() {}

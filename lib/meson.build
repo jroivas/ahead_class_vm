@@ -1,5 +1,6 @@
 libclass = static_library('libclass',
     sources: [
+        'dynload.cpp',
         'vm_object.cpp',
         'vm_stack.cpp',
         'stringbuilder.cpp',

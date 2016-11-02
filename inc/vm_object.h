@@ -49,7 +49,8 @@ public:
 };
 
 class vmClass;
-void registerClass(vmClass *cl);
+#include <dynload.h>
+
 std::vector<std::string> parseField(std::string);
 std::pair<std::string,std::string> parseParams(std::string);
 
@@ -129,6 +130,19 @@ public:
         if (!o) throw "Nullptr";
         return o->type == TYPE_STRING ? static_cast<vmString *>(o) : nullptr;
     }
+};
+
+class vmLocal : public vmObject
+{
+public:
+    vmLocal() : vmObject(TYPE_INTEGER), val_long(0) {}
+    union {
+        nInteger val_int;
+        nLong val_long;
+        nFloat val_float;
+        nDouble val_double;
+        vmObject *val_obj;
+    };
 };
 
 class vmInteger : public vmObject
