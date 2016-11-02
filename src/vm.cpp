@@ -331,6 +331,8 @@ std::string VM::gen_icmp(uint8_t oper, std::string &name)
     target = pc + target - 3;  
 
     std::string res = "";
+    res += indent() + "{\n";
+    iin();
     res += indent() + "nInteger v1 = stack->popInteger();\n";
     res += indent() + "nInteger v2 = stack->popInteger();\n";
 
@@ -356,6 +358,8 @@ std::string VM::gen_icmp(uint8_t oper, std::string &name)
         default:
             throw "Invalid operation";
     }
+    din();
+    res += indent() + "}\n";
 
     return res;
 }
