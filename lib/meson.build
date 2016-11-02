@@ -1,4 +1,4 @@
-libclass = static_library('libclass',
+libclass = static_library('class',
     sources: [
         'dynload.cpp',
         'vm_object.cpp',

@@ -18,3 +18,16 @@ vmClass *loadClass(std::string name)
     return __classes[name];
 }
 
+std::string solveClassObjectName(std::string name)
+{
+    if (name == "java/lang/System") return "";
+    if (name == "java/io/PrintStream") return "PrintStream";
+    if (name == "java/lang/StringBuilder") return "StringBuilder";
+    if (name == "java/lang/String") return "ClassLangString";
+    /* FIXME
+    for (auto c : __classes) {
+        if (c.first == name) return "";
+    }
+    */
+    return "";
+}

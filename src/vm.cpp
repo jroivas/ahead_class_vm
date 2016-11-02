@@ -64,7 +64,7 @@ std::string VM::transcompile(std::string name, vmCodeAttribute *code)
     res += indent() + "vmObject *" + fname +  "() {\n";
 
     iin();
-    res += indent() + "vmStack *stack = new vmStack(" + std::to_string(code->max_stack) + ");\n";
+    res += indent() + "vmStack *stack = new vmStack(100 * " + std::to_string(code->max_stack) + ");\n";
     res += indent() + "vmObject *retVal = nullptr;\n";
     for (uint16_t locals = 0; locals < code->max_locals; locals++) {
         res += indent() + "vmLocal local" + std::to_string(locals) + ";\n";
@@ -491,7 +491,7 @@ std::string VM::gen_invokeVirtual()
     uint32_t fi = ++_temp;
     res += indent() + "{\n";
     iin();
-    res += indent() + "vmClass *__inst" + std::to_string(ii) + "  = loadClass(\"" + classname->str() + "\");\n";
+    res += indent() + "vmClass *__inst" + std::to_string(ii) + " = loadClass(\"" + classname->str() + "\");\n";
     res += indent() + "if (__inst" + std::to_string(ii) + ") {\n";
     iin();
     res += indent() + "FunctionDesc *__f" + std::to_string(fi) + " = __inst" + std::to_string(ii) + "->getFunction(\"" + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str()+ "\");\n";
@@ -503,6 +503,10 @@ std::string VM::gen_invokeVirtual()
     res += indent() + "__f" + std::to_string(fi) + "->func(__inst" + std::to_string(ii) + ", stack);\n";
     din();
 
+    res += indent() + "} else {\n";
+    iin();
+    res += indent() + "throw \"Invalid class: " + classname->str() + "\";\n";
+    din();
     res += indent() + "}\n";
     //res += indent() + "\n";
     din();

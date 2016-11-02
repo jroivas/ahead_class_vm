@@ -1,6 +1,7 @@
 #include <iostream>
 #include <classloader.h>
 #include <cstring>
+#include <algorithm>
 #include <vm.h>
 
 #include <lib/stringbuilder.h>
@@ -20,7 +21,7 @@ int main(int argc, char **argv)
         std::cout << "ERROR: Parsing of " << argv[1] << " failed!\n";
         return 2;
     }
-    /*
+    std::cout << "/*\n";
     std::cout << "Parse? " << (ok ? "ok" :"fail") << "\n";
     std::cout << "Version " << m.major_version << " " << m.minor_version << "\n";
     std::cout << "Access flags " << m.access_flags << "\n";
@@ -30,11 +31,15 @@ int main(int argc, char **argv)
     std::cout << "Fields " << m.fields_count << "\n";
     std::cout << "Methods " << m.methods_count << "\n";
     std::cout << "Attrib " << m.attributes_count << "\n";
+    std::cout << "*/\n";
+    /*
     */
-    std::cout << "#include <vm_object.h>\n";
+    std::cout << "#include <runtime.h>\n";
+    /*
     std::cout << "#include <vm_stack.h>\n";
     std::cout << "#include <dynload.h>\n";
     std::cout << "#include <time.h>\n";
+    */
 
     vmStack *st = new vmStack();
     VM *vm = new VM(&m, st);
@@ -81,9 +86,23 @@ int main(int argc, char **argv)
         }
     }
     (void)preload;
+    std::sort(vm->loadstack.begin(), vm->loadstack.end());
+    auto last_class = std::unique(vm->loadstack.begin(), vm->loadstack.end());
+
     std::cout << "int main(int argc, char **argv)\n{\n";
     std::cout << "    int ret = 0;\n";
-    std::cout << "    class_main();\n";
+    for (auto i = vm->loadstack.begin(); i < last_class; ++i) {
+        std::string name = solveClassObjectName(*i);
+        if (!name.empty()) {
+            std::cout << "    new " + name + "(); // " + *i + "\n";
+        }
+    }
+    std::cout << "    try {\n";
+    std::cout << "        class_main();\n";
+    std::cout << "    }\n";
+    std::cout << "    catch (const char* m) {\n";
+    std::cout << "        std::cout << \"ERROR: \" << m << std::endl;\n";
+    std::cout << "    }\n";
     std::cout << "    return ret;\n";
     std::cout << "}\n";
 

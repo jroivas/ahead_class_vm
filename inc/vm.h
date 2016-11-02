@@ -88,5 +88,6 @@ private:
     vmConstantClass *parseClassConstant(uint16_t idx);
     uint8_t _indent;
     uint32_t _temp;
+public:
     std::vector<std::string> loadstack;
 };

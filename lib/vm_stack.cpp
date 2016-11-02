@@ -2,7 +2,10 @@
 #include <iostream>
 #include <cstring>
 
-#define assert_stack_size_push() if (size>=max_size) throw "PUSH: Out of bounds";
+#define assert_stack_size_push() if (size>=max_size) {\
+std::cout<<  "PUSH: Out of bounds" << size << " " << max_size << "\n";\
+throw "PUSH: Out of bounds";\
+}
 #define assert_stack_size_pop() if (size==0) throw "POP: Out of bounds";
 
 vmStack::vmStack()
@@ -49,6 +52,7 @@ vmObject *vmStack::pop()
         case ST_DOUBLE: return new vmDouble(popDouble());
         case ST_OBJ: return popObject();
     }
+    throw "Invalid pop";
 #if 0
     vmObject *tmp = stack.back();
     --size;
