@@ -22,7 +22,8 @@ VM::VM(vmClassFile *_cl, vmStack *_stack)
     : cl(_cl),
     stack(_stack),
     ptr(nullptr),
-    _indent(0)
+    _indent(0),
+    _temp(0)
 {
     /*
     for (uint8_t i = 0; i < 100; ++i) {
@@ -68,6 +69,7 @@ std::string VM::transcompile(std::string name, vmCodeAttribute *code)
     pc = 0;
     ptr = code->code;
     while (pc < code->code_length) {
+        res += "goto_target_" + std::to_string(pc) + ":\n";
         uint8_t opcode = fetch();
         res += genCode(opcode);
     }
@@ -95,125 +97,90 @@ std::string VM::genCode(uint8_t opcode)
             return gen_iconst(4);
         case 0x08:
             return gen_iconst(5);
+
+        case 0x12:
+            return gen_ldc();
+        case 0x13:
+            return gen_ldc_w();
+        case 0x14:
+            return gen_ldc_w();
+        case 0x1a:
+            return gen_iload(0);
+        case 0x1b:
+            return gen_iload(1);
+        case 0x1c:
+            return gen_iload(2);
+        case 0x1d:
+            return gen_iload(3);
+        case 0x1e:
+            return gen_lload(0);
+        case 0x1f:
+            return gen_lload(1);
+        case 0x20:
+            return gen_lload(2);
+        case 0x21:
+            return gen_lload(3);
+
         case 0x2a:
             return indent() + "stack->push(&local0);\n";
+
+        case 0x3a:
+            return gen_astore_idx();
+        case 0x3b:
+            return gen_istore(0);
+        case 0x3c:
+            return gen_istore(1);
+        case 0x3d:
+            return gen_istore(2);
+        case 0x3e:
+            return gen_istore(3);
+        case 0x3f:
+            return gen_lstore(0);
+        case 0x40:
+            return gen_lstore(1);
+        case 0x41:
+            return gen_lstore(2);
+        case 0x42:
+            return gen_lstore(3);
+        case 0x59:
+            return gen_dup();
+
+        case 0x65:
+            return gen_lsub();
+        case 0x6b:
+            return gen_dmul();
+        case 0x6f:
+            return gen_ddiv();
+
+        case 0x8a:
+            return gen_l2d();
+        case 0x84:
+            return gen_iinc();
+
+        case 0xa2:
+            return gen_icmp(CMP_GE);
+        case 0xa7:
+            return gen_goto();
+
         case 0xb1:
             return indent() + "return retVal\n";
+        case 0xb2:
+            return gen_getStatic();
+        case 0xb6:
+            return gen_invokeVirtual();
         case 0xb7:
             return gen_invokeVirtual();
+        case 0xb8:
+            return gen_invokeStatic();
+        case 0xbb:
+            return gen_new();
         /*
-        case 0x12:
-            ldc();
-            break;
-        case 0x13:
-            ldc_w();
-            break;
-        case 0x14:
-            ldc_w();
-            break;
         case 0x19:
             aload();
-            break;
-        case 0x1a:
-            iload(0);
-            break;
-        case 0x1b:
-            iload(1);
-            break;
-        case 0x1c:
-            iload(2);
-            break;
-        case 0x1d:
-            iload(3);
-            break;
-        case 0x1e:
-            lload(0);
-            break;
-        case 0x1f:
-            lload(1);
-            break;
-        case 0x20:
-            lload(2);
-            break;
-        case 0x21:
-            lload(3);
-            break;
-        case 0x2a:
-            if (locals.empty()) {
-                //solve "this" object from cl
-                //locals.push_back(new vmObject(cl));
-            }
-            stack->push(locals[0]);
-            break;
-        case 0x3a:
-            astore_idx();
-            break;
-        case 0x3b:
-            istore(0);
-            break;
-        case 0x3c:
-            istore(1);
-            break;
-        case 0x3d:
-            istore(2);
-            break;
-        case 0x3e:
-            istore(3);
-            break;
-        case 0x3f:
-            lstore(0);
-            break;
-        case 0x40:
-            lstore(1);
-            break;
-        case 0x41:
-            lstore(2);
-            break;
-        case 0x42:
-            lstore(3);
-            break;
-        case 0x59:
-            dup();
-            break;
-        case 0x65:
-            lsub();
-            break;
-        case 0x6b:
-            dmul();
-            break;
-        case 0x6f:
-            ddiv();
-            break;
-        case 0x8a:
-            l2d();
-            break;
-        case 0x84:
-            iinc();
-            break;
-        case 0xa2:
-            icmp(CMP_GE);
-            break;
-        case 0xa7:
-            vm_goto();
             break;
         case 0xb1:
             // return
             return;
-        case 0xb2:
-            getStatic();
-            break;
-        case 0xb6:
-            invokeVirtual();
-            break;
-        case 0xb7:
-            invokeSpecial();
-            break;
-        case 0xb8:
-            invokeStatic();
-            break;
-        case 0xbb:
-            vm_new();
-            break;
         */
         default:
             std::cout <<  "Unimplemented: " << std::hex << (uint32_t)opcode << " @" << std::dec << pc << "\n";
@@ -221,9 +188,224 @@ std::string VM::genCode(uint8_t opcode)
     }
 }
 
+std::string VM::gen_ldc()
+{
+    return gen_ldc_idx(fetch());
+}
+
+std::string VM::gen_ldc_w()
+{
+    return gen_ldc_idx(fetch16());
+}
+
+std::string VM::gen_ldc_idx(uint16_t idx)
+{
+    // Constant create objects, use here as-is
+    vmConstantInfo *tmp = cl->constant_pool[idx];
+
+    switch (tmp->tag) {
+        case C_Integer:
+            return "stack->push(vmInteger(" + std::to_string(((vmConstantInteger*)tmp)->val.val) + "));\n";
+        case C_Long:
+            return "stack->push(vmLong(" + std::to_string(((vmConstantLong*)tmp)->val.val) + "));\n";
+        case C_Float:
+            return "stack->push(vmFloat(" + std::to_string(((vmConstantFloat*)tmp)->val.val) + "));\n";
+        case C_Double:
+            return "stack->push(vmDouble(" + std::to_string(((vmConstantDouble*)tmp)->val.val) +"));\n";
+        case C_String: {
+            return "stack->push(vmString(\"" + (parseRefUtf8((vmConstantString*)tmp)->str()) +"\"));\n";
+        }
+        default:
+            std::cout <<  "Invalid object: " << idx << " " << tmp << "\n";
+            throw "Invalid object";
+    }
+}
+
 std::string VM::gen_iconst(int16_t val)
 {
     return indent() + "stack->push(vmInteger(" + std::to_string(val) + ");\n";
+}
+
+std::string VM::gen_iload(int16_t index)
+{
+    return indent() + "stack->push(toInteger(local" + std::to_string(index) + ");\n";
+}
+
+std::string VM::gen_astore_idx()
+{
+    uint8_t idx = fetch();
+    return indent() + "local" + std::to_string(idx) + " = stack->pop();\n";
+}
+
+std::string VM::gen_istore(int16_t index)
+{
+    return indent() + "local" + std::to_string(index) + " = toInteger(stack->pop());\n";
+}
+
+std::string VM::gen_lload(int16_t index)
+{
+    return indent() + "stack->push(toLong(local" + std::to_string(index) + ");\n";
+}
+
+std::string VM::gen_lstore(int16_t index)
+{
+    return indent() + "local" + std::to_string(index) + " = toLong(stack->pop());\n";
+}
+
+std::string VM::gen_l2d()
+{
+    std::string res = "";
+    res += indent() + "vmLong l = toLong(stack->pop());\n";
+    res += indent() + "stack->push(vmDouble(l);\n";
+    return res;
+}
+
+std::string VM::gen_iinc()
+{
+    uint8_t index = fetch();
+    uint8_t val = fetch();
+    // FIXME
+    return indent() + "local" + std::to_string(index) + " = vmInteger(" +
+        "toInteger(local" + std::to_string(index) + ")->val" +
+        std::to_string(val) + ")\n";
+}
+
+std::string VM::gen_lsub()
+{
+    std::string res = "";
+
+    res += indent() + "vmLong v1 = toLong(stack->pop());\n";
+    res += indent() + "vmLong v2 = toLong(stack->pop());\n";
+    res += indent() + "stack->push(vmLong(v2.val - v1.val));\n";
+
+    return res;
+}
+
+std::string VM::gen_dmul()
+{
+    std::string res = "";
+
+    res += indent() + "vmDouble v1 = toDouble(stack->pop());\n";
+    res += indent() + "vmDouble v2 = toDouble(stack->pop());\n";
+    res += indent() + "stack->push(vmDouble(v2.val * v1.val));\n";
+
+    return res;
+}
+
+std::string VM::gen_ddiv()
+{
+    std::string res = "";
+
+    res += indent() + "vmDouble v1 = toDouble(stack->pop());\n";
+    res += indent() + "vmDouble v2 = toDouble(stack->pop());\n";
+    res += indent() + "if (v1->val == 0) throw \"Divide by zero\";\n";
+    res += indent() + "stack->push(vmDouble(v2.val / v1.val));\n";
+
+    return res;
+}
+
+std::string VM::gen_icmp(uint8_t oper)
+{
+    int16_t target = fetch16();
+    // 8 bit opcode + 16 bit addr = -3
+    target = pc + target - 3;  
+
+    std::string res = "";
+    res += indent() + "vmInteger v1 = stack->pop();\n";
+    res += indent() + "vmInteger v2 = stack->pop();\n";
+
+    res += indent() + "switch (oper) {\n";
+    iin();
+    res += indent() + "case CMP_EQ: if (v2.val == v1.val) goto goto_target_" + std::to_string(target) +"; break;\n";
+    res += indent() + "case CMP_NE: if (v2.val != v1.val) goto goto_target_" + std::to_string(target) +"; break;\n";
+    res += indent() + "case CMP_GE: if (v2.val >= v1.val) goto goto_target_" + std::to_string(target) +"; break;\n";
+    res += indent() + "case CMP_GT: if (v2.val > v1.val) goto goto_target_" + std::to_string(target) +"; break;\n";
+    res += indent() + "case CMP_LE: if (v2.val <= v1.val) goto goto_target_" + std::to_string(target) +"; break;\n";
+    res += indent() + "case CMP_LT: if (v2.val < v1.val) goto goto_target_" + std::to_string(target) +"; break;\n";
+    res += indent() + "default: throw \"Invalid operation\";\n";
+    din();
+    res += indent() + "}\n";
+
+    return res;
+}
+
+std::string VM::gen_goto()
+{
+    int16_t target = fetch16();
+    // 8 bit opcode + 16 bit addr = -3
+    target = pc + target - 3;  
+    return indent() + "goto goto_target_" + std::to_string(target) + ";\n";
+}
+
+std::string VM::gen_dup()
+{
+    std::string res;
+    res += indent() + "vmObject *o = stack->peek();\n";
+    res += indent() + "stack->push(o);\n";
+    return res;
+}
+
+std::string VM::gen_new()
+{
+    int16_t idx = fetch16();
+
+    vmConstantClass *classref = parseClassConstant(idx);
+    vmConstantUtf8 *classname = parseRefUtf8(classref);
+
+    std::string res;
+    res += indent() + "vmClass *c = loadClass(" + classname->str() + ");\n";
+    res += indent() + "stack->push(c->newInstance());\n";
+    return res;
+}
+
+std::string VM::gen_invokeStatic()
+{
+    uint16_t idx = fetch16();
+
+    vmConstantRef *method = parseRef(idx);
+    vmConstantClass *classref = parseRefClass(method);
+    vmConstantNameAndType *nametype = parseRefNameType(method);
+    vmConstantUtf8 *classname = parseRefUtf8(classref);
+
+    std::string res = "";
+    bool ok = false;
+
+    if (classname->str() == "java/lang/System") {
+        if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "currentTimeMillis") {
+        res += indent() + "struct timespec tt_" + std::to_string(++_temp) + ";\n";
+        res += indent() + "clock_gettime(CLOCK_REALTIME, &tt_" + std::to_string(_temp) + ");\n";
+        res += indent() + "stack->push(new vmLong(tt.tv_sec * 1000 + tt.tv_nsec / 1000000));\n";
+        ok = true;
+        }
+    }
+    if (!ok) {
+        throw "Invalid call";
+    }
+    return res;
+}
+
+std::string VM::gen_getStatic()
+{
+    uint16_t idx = fetch16();
+
+    vmConstantRef *method = parseRef(idx);
+    vmConstantClass *classref = parseRefClass(method);
+    vmConstantNameAndType *nametype = parseRefNameType(method);
+    vmConstantUtf8 *classname = parseRefUtf8(classref);
+
+    std::string res = "";
+    // FIXME
+    if (classname->str() == "java/lang/System") {
+        if (((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() == "out") {
+            if (((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() == "Ljava/io/PrintStream;") {
+                res += indent() + "vmClass *cl = loadClass(\"java/io/PrintStream\");\n";
+                res += indent() + "if (!cl) throw \"Can't load class\";\n";
+                res += indent() + "stack->push(cl);\n";
+                return res;
+            }
+        }
+    }
+    throw "Invalid static";
 }
 
 std::string VM::gen_invokeVirtual()
@@ -242,7 +424,12 @@ std::string VM::gen_invokeVirtual()
     iin();
     res += indent() + "std::string fname = \"" + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str()+ "\";\n";
     res += indent() + "FunctionDesc *f = inst->getFunction(fname);\n";
-    res += indent() + "f->funct(inst, stack);\n";
+    res += indent() + "if (!f) {\n";
+    iin();
+    res += indent() + "throw \"Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() + "\";\n";
+    din();
+    res += indent() + "}\n";
+    res += indent() + "f->func(inst, stack);\n";
     din();
 
     res += indent() + "}\n";

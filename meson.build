@@ -13,3 +13,4 @@ top_inc = include_directories('.')
 
 subdir('lib')
 subdir('src')
+subdir('test')

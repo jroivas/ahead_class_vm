@@ -28,6 +28,12 @@ enum vmType {
     TYPE_CLASS
 };
 
+typedef uint32_t nInteger;
+typedef uint64_t nLong;
+typedef float nFloat;
+typedef double nDouble;
+typedef std::string nString;
+
 class vmObject
 {
 public:

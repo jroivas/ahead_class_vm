@@ -56,7 +56,26 @@ private:
     std::string fixName(std::string name);
     std::string genCode(uint8_t opcode);
     std::string gen_iconst(int16_t val);
+    std::string gen_iload(int16_t val);
+    std::string gen_istore(int16_t val);
+    std::string gen_lload(int16_t val);
+    std::string gen_lstore(int16_t val);
+    std::string gen_getStatic();
+    std::string gen_invokeStatic();
     std::string gen_invokeVirtual();
+    std::string gen_ldc();
+    std::string gen_ldc_w();
+    std::string gen_ldc_idx(uint16_t idx);
+    std::string gen_icmp(uint8_t oper);
+    std::string gen_astore_idx();
+    std::string gen_iinc();
+    std::string gen_dmul();
+    std::string gen_ddiv();
+    std::string gen_goto();
+    std::string gen_lsub();
+    std::string gen_new();
+    std::string gen_dup();
+    std::string gen_l2d();
 
     vmInteger *toInteger(vmObject *);
     vmLong *toLong(vmObject *);
@@ -68,5 +87,6 @@ private:
     vmConstantUtf8 *parseRefUtf8(vmConstantInfo *ref);
     vmConstantClass *parseClassConstant(uint16_t idx);
     uint8_t _indent;
+    uint32_t _temp;
     std::vector<std::string> loadstack;
 };
