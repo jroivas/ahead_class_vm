@@ -1,5 +1,6 @@
 #include "vm.h"
 #include <iostream>
+#include <sstream>
 #include <typeinfo>
 
 #include <cstring>
@@ -107,6 +108,8 @@ std::string VM::genCode(uint8_t opcode, std::string &name)
             return gen_ldc_w();
         case 0x14:
             return gen_ldc_w();
+        case 0x19:
+            return gen_aload();
         case 0x1a:
             return gen_iload(0);
         case 0x1b:
@@ -178,16 +181,14 @@ std::string VM::genCode(uint8_t opcode, std::string &name)
         case 0xbb:
             return gen_new();
         /*
-        case 0x19:
-            aload();
-            break;
         case 0xb1:
             // return
             return;
         */
         default:
-            std::cout <<  "Unimplemented: " << std::hex << (uint32_t)opcode << " @" << std::dec << pc << "\n";
-            throw "Unimplemented";
+            std::stringstream s;
+            s <<  "Unimplemented: " << std::hex << (uint32_t)opcode << " @" << std::dec << pc << "\n";
+            throw s.str();
     }
 }
 
@@ -231,8 +232,13 @@ std::string VM::gen_iconst(int16_t val)
 
 std::string VM::gen_iload(int16_t index)
 {
-    //return indent() + "stack->pushInteger(vmInteger::castFrom(&local" + std::to_string(index) + ")->val);\n";
     return indent() + "stack->pushInteger(local" + std::to_string(index) + ".val_int);\n";
+}
+
+std::string VM::gen_aload()
+{
+    uint8_t index = fetch();
+    return indent() + "stack->pushObject(&local" + std::to_string(index) + ");";
 }
 
 std::string VM::gen_astore_idx()
@@ -245,30 +251,22 @@ std::string VM::gen_astore_idx()
 std::string VM::gen_istore(int16_t index)
 {
     return indent() + "local" + std::to_string(index) + ".val_int = stack->popInteger();\n";
-    //return indent() + "local" + std::to_string(index) + " = *vmInteger::castFrom(stack->pop());\n";
-    //return indent() + "local" + std::to_string(index) + " = toInteger(stack->pop());\n";
 }
 
 std::string VM::gen_lload(int16_t index)
 {
     return indent() + "stack->pushLong(local" + std::to_string(index) + ".val_long);\n";
-    //return indent() + "stack->push(toLong(local" + std::to_string(index) + ");\n";
-    //return indent() + "stack->pushLong(vmLong::castFrom(&local" + std::to_string(index) + ")->val);\n";
 }
 
 std::string VM::gen_lstore(int16_t index)
 {
     return indent() + "local" + std::to_string(index) + ".val_long = stack->popLong();\n";
-    //return indent() + "local" + std::to_string(index) + " = toLong(stack->pop());\n";
 }
 
 std::string VM::gen_l2d()
 {
     std::string res = "";
     res += indent() + "stack->pushDouble(stack->popLong());\n";
-    /*res += indent() + "vmLong l = toLong(stack->pop());\n";
-    res += indent() + "stack->push(vmDouble(l);\n";
-    */
     return res;
 }
 
@@ -278,11 +276,6 @@ std::string VM::gen_iinc()
     uint8_t val = fetch();
     // FIXME
     return indent() + "local" + std::to_string(index) + ".val_int += " +std::to_string(val) + ";\n";
-    /*
-    return indent() + "local" + std::to_string(index) + " = vmInteger(" +
-        "toInteger(local" + std::to_string(index) + ")->val" +
-        std::to_string(val) + ")\n";
-    */
 }
 
 std::string VM::gen_lsub()
@@ -310,11 +303,6 @@ std::string VM::gen_dmul()
     std::string res = "";
 
     res += indent() + "stack->pushDouble(stack->popDouble() * stack->popDouble());\n";
-    /*
-    res += indent() + "vmDouble v1 = toDouble(stack->pop());\n";
-    res += indent() + "vmDouble v2 = toDouble(stack->pop());\n";
-    res += indent() + "stack->push(vmDouble(v2.val * v1.val));\n";
-    */
 
     return res;
 }
@@ -332,12 +320,6 @@ std::string VM::gen_ddiv()
     res += indent() + "stack->pushDouble(v2 / v1);\n";
     din();
     res += indent() + "}\n";
-    /*
-    res += indent() + "vmDouble v1 = toDouble(stack->pop());\n";
-    res += indent() + "vmDouble v2 = toDouble(stack->pop());\n";
-    res += indent() + "if (v1->val == 0) throw \"Divide by zero\";\n";
-    res += indent() + "stack->push(vmDouble(v2.val / v1.val));\n";
-    */
 
     return res;
 }
@@ -374,19 +356,6 @@ std::string VM::gen_icmp(uint8_t oper, std::string &name)
         default:
             throw "Invalid operation";
     }
-    /*
-    res += indent() + "switch (oper) {\n";
-    iin();
-    res += indent() + "case CMP_EQ: if (v2 == v1) goto " + name + "goto_target_" + std::to_string(target) +"; break;\n";
-    res += indent() + "case CMP_NE: if (v2 != v1) goto " + name + "goto_target_" + std::to_string(target) +"; break;\n";
-    res += indent() + "case CMP_GE: if (v2 >= v1) goto " + name + "goto_target_" + std::to_string(target) +"; break;\n";
-    res += indent() + "case CMP_GT: if (v2 > v1) goto " + name + "goto_target_" + std::to_string(target) +"; break;\n";
-    res += indent() + "case CMP_LE: if (v2 <= v1) goto " + name + "goto_target_" + std::to_string(target) +"; break;\n";
-    res += indent() + "case CMP_LT: if (v2 < v1) goto " + name + "goto_target_" + std::to_string(target) +"; break;\n";
-    res += indent() + "default: throw \"Invalid operation\";\n";
-    din();
-    res += indent() + "}\n";
-    */
 
     return res;
 }
@@ -514,28 +483,8 @@ std::string VM::gen_invokeVirtual()
     res += indent() + "throw \"Invalid class: " + classname->str() + "\";\n";
     din();
     res += indent() + "}\n";
-    //res += indent() + "\n";
     din();
     res += indent() + "}\n";
-#if 0
-    vmClass *inst = loadClass(classname->str());
-    if (inst) {
-        std::string fname = ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
-        loadstack.push_back(fname);
-        FunctionDesc *f = inst->getFunction(fname);
-        if (!f) {
-            std::cout <<  "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
-            throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
-        }
-        if (!f->init) {
-            f->parse(((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str());
-        }
-
-        f->func(inst, stack);
-    }
-
-    return indent() + "// FIXME invokeSpecial\n";
-#endif
     return res;
 }
 
@@ -706,8 +655,13 @@ void VM::decode(uint8_t opcode)
             vm_new();
             break;
         default:
+            /*
             std::cout <<  "Unimplemented: " << std::hex << (uint32_t)opcode << " @" << std::dec << pc << "\n";
-            throw "Unimplemented";
+            throw "Unimplemented: " + std::to_string((uint32_t)opcode);
+            */
+            std::stringstream s;
+            s <<  "Unimplemented: " << std::hex << (uint32_t)opcode << " @" << std::dec << pc << "\n";
+            throw s.str();
     }
 }
 

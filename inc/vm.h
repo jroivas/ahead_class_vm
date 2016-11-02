@@ -59,6 +59,7 @@ private:
     std::string gen_iload(int16_t val);
     std::string gen_istore(int16_t val);
     std::string gen_lload(int16_t val);
+    std::string gen_aload();
     std::string gen_lstore(int16_t val);
     std::string gen_getStatic();
     std::string gen_invokeStatic();

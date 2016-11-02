@@ -72,7 +72,17 @@ int main(int argc, char **argv)
                     std::cout << std::dec << "\n";
                     */
                     //vm->execute(code);
+                    try {
                     std::cout << vm->transcompile(mu->str(), code);
+                    }
+                    catch (const char *e) {
+                        std::cerr << "ERROR: Can't compile: " << e << "\n";
+                        exit(1);
+                    }
+                    catch (std::string e) {
+                        std::cerr << "ERROR: Can't compile: " << e << "\n";
+                        exit(1);
+                    }
                 } else {
                     //std::cout << i << " " << u->bytes << "\n";
                     std::cout << "/*\n";
@@ -101,7 +111,7 @@ int main(int argc, char **argv)
     std::cout << "        class_main();\n";
     std::cout << "    }\n";
     std::cout << "    catch (const char* m) {\n";
-    std::cout << "        std::cout << \"ERROR: \" << m << std::endl;\n";
+    std::cout << "        std::cerr << \"ERROR: \" << m << std::endl;\n";
     std::cout << "    }\n";
     std::cout << "    return ret;\n";
     std::cout << "}\n";
