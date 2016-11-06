@@ -7,7 +7,8 @@ class StringBuilderInstance : public vmClassInstance
 public:
     StringBuilderInstance(vmClass *base) : vmClassInstance(base) {}
 
-    std::string val;
+    //std::string val;
+    vmString val;
 };
 
 class ClassLangStringInstance : public vmClassInstance

@@ -51,7 +51,9 @@ vmObject *vmStack::pop()
         case ST_LONG: return new vmLong(popLong());
         case ST_FLOAT: return new vmFloat(popFloat());
         case ST_DOUBLE: return new vmDouble(popDouble());
-        case ST_OBJ: return popObject();
+        case ST_OBJ: {
+            return reinterpret_cast<vmObject*>(m_data[--size]);
+        }
     }
     throw "Invalid pop";
 #if 0

@@ -79,34 +79,35 @@ void StringBuilder::_init_(vmClassInstance *_thiz)
     if (!thiz) {
         throw "ERR: Wrong type: " + typeName(_thiz);
     }
-    thiz->val = "";
+    thiz->val.val = "";
 }
 
 vmClassInstance *StringBuilder::append(vmClassInstance *_thiz, vmString *s)
 {
     StringBuilderInstance *thiz = static_cast<StringBuilderInstance *>(_thiz);
-    thiz->val += s->val;
+    thiz->val.val += s->val;
     return thiz;
 }
 
 vmClassInstance *StringBuilder::append(vmClassInstance *_thiz, vmLong*o)
 {
     StringBuilderInstance *thiz = static_cast<StringBuilderInstance *>(_thiz);
-    thiz->val += std::to_string(o->val);
+    thiz->val.val += std::to_string(o->val);
     return thiz;
 }
 
 vmClassInstance *StringBuilder::append(vmClassInstance *_thiz, vmDouble*o)
 {
     StringBuilderInstance *thiz = static_cast<StringBuilderInstance *>(_thiz);
-    thiz->val += std::to_string(o->val);
+    thiz->val.val += std::to_string(o->val);
     return thiz;
 }
 
 vmString *StringBuilder::toString(vmClassInstance *_thiz)
 {
     StringBuilderInstance *thiz = static_cast<StringBuilderInstance *>(_thiz);
-    return new vmString(thiz->val);
+    return &thiz->val;
+    //return new vmString(thiz->val);
 }
 
 
