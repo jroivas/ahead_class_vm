@@ -44,7 +44,8 @@ void vmStack::insert(vmObject *obj)
 
 vmObject *vmStack::pop()
 {
-    switch (peekType()) {
+    if (size == 0) throw "Invalid pop";
+    switch (m_types[size - 1]) {
         case ST_EMPTY: throw "Empty stack";
         case ST_INT: return new vmInteger(popInteger());
         case ST_LONG: return new vmLong(popLong());
@@ -67,7 +68,7 @@ vmObject *vmStack::peek()
 {
     if (size == 0) return nullptr;
     uint64_t v = m_data[size - 1];
-    switch (peekType()) {
+    switch (m_types[size - 1]) {
         case ST_INT: return new vmInteger(v);
         case ST_LONG: return new vmLong(v);
         case ST_FLOAT: return new vmFloat(v);

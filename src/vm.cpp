@@ -81,7 +81,9 @@ std::string VM::transcompile(std::string name, vmCodeAttribute *code)
     }
 
     for (auto lc : loaded_classes) {
-        pre += indent() + "vmClass *" + lc.second + " = loadClass(\"" + lc.first + "\");\n";
+        std::string cname = solveClassObjectName(lc.first);
+        pre += indent() +  cname + "* " + lc.second + " = new " + cname + "();\n";
+        //pre += indent() +"vmClass *" + lc.second + " = loadClass(\"" + lc.first + "\");\n";
         pre += indent() + "if (!" + lc.second + ") {\n";
         iin();
         pre += indent() + "throw \"Can't load class: " + lc.first +"\";\n";
@@ -503,11 +505,48 @@ std::string VM::gen_invokeVirtual()
     std::string n = fixName(classname->str());
     loaded_classes[classname->str()] = n;
 
-    std::string f = ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
+    std::string fname = ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
+    std::string desc = ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str();
+    // FIXME class needs to be parsed, should pause and search for rest of
+    // the search path for it if not found or parsed yet
+    vmClass *inst = loadClass(classname->str());
+    if (!inst) throw "Invalid class: " + classname->str();
+
+    FunctionDesc *fdesc = inst->getFunction(fname, desc);
+    if (!fdesc) throw "Invalid method: " + fname + " "+ desc + " on " + classname->str();
+
+    std::string c = fixName(fname);
+    // FIXME
+    //for (uint32_t pi = 0; pi < fdesc->params.size(); ++pi) {
+    for (uint32_t pi = fdesc->params.size(); pi > 0; --pi) {
+        std::string pname = fdesc->params[pi - 1];
+        std::string ptype = typeToNative(pname);
+        res += indent() + ptype + " p" + std::to_string(pi - 1) + " = (" + ptype +" )stack->pop();\n";
+    }
+
+    std::string rettype = "";
+    if (!fdesc->returnType.empty()) {
+        rettype = typeToNative(fdesc->returnType) + " retVal = ";
+    }
+    res += indent() + "vmClassInstance *thiz = vmClassInstance::castFrom(stack->pop());\n";
+    res += indent() + rettype + n + "->" + c + "(";
+    res += "thiz";
+    for (uint32_t pi = 0; pi < fdesc->params.size(); ++pi) {
+        res += ", ";
+        res += "p" + std::to_string(pi);
+    }
+    res += ");\n";
+    if (!rettype.empty()) {
+        res += indent() + "stack->push(retVal);\n";
+    }
+    //res += indent() + c + "->func(" + n + ", stack);\n";
+    /*
     std::string c = n + "__" + fixName(f);
     loaded_func[c] = std::pair<std::string, std::string>(n, f);
 
     res += indent() + c + "->func(" + n + ", stack);\n";
+    */
+
     /*
     res += indent() + "FunctionDesc *__f" + std::to_string(fi) + " = " + n + "->getFunction(\"" + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str()+ "\");\n";
     res += indent() + "if (!__f" + std::to_string(fi) + ") {\n";
@@ -849,9 +888,11 @@ void VM::invokeVirtual()
             std::cout <<  "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
             throw "Invalid function on " + classname->str() + ": " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
         }
+        /*
         if (!f->init) {
             f->parse(((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str());
         }
+        */
         // FIXME constructing new stack
         /*
         vmStack *st = new vmStack();

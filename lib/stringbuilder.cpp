@@ -3,10 +3,16 @@
 #include <algorithm>
 #include <vm_stack.h>
 
-StringBuilder::StringBuilder(bool base)
-    : vmClass("java/lang/StringBuilder", base)
+StringBuilder::StringBuilder()
+    : vmClass("java/lang/StringBuilder")
 {
-    if (base) {
+    addFunction(new FunctionDesc("<init>", "()V"));
+    addFunction(new FunctionDesc("append", "(Ljava/lang/String;)Ljava/lang/StringBuilder;"));
+    addFunction(new FunctionDesc("append", "(J)Ljava/lang/StringBuilder;"));
+    addFunction(new FunctionDesc("append", "(D)Ljava/lang/StringBuilder;"));
+    addFunction(new FunctionDesc("toString", "()Ljava/lang/String;"));
+#if 0
+    //if (base) {
     setFunction("<init>", [](vmClass *clz, vmStack *st) {
         vmClass *thiz = vmClass::castFrom(st->pop());
         thiz->val = "";
@@ -63,23 +69,67 @@ StringBuilder::StringBuilder(bool base)
         //std::cout << " THIS " << thiz << " " << thiz->val << "\n";
         st->push(new vmString(thiz->val));
     });
-    }
+    //}
+#endif
 }
 
-vmClass *StringBuilder::newInstance()
+void StringBuilder::_init_(vmClassInstance *_thiz)
 {
-    vmClass *res = new StringBuilder(false);
+    StringBuilderInstance *thiz = dynamic_cast<StringBuilderInstance *>(_thiz);
+    if (!thiz) {
+        throw "ERR: Wrong type: " + typeName(_thiz);
+    }
+    thiz->val = "";
+}
+
+vmClassInstance *StringBuilder::append(vmClassInstance *_thiz, vmString *s)
+{
+    StringBuilderInstance *thiz = static_cast<StringBuilderInstance *>(_thiz);
+    thiz->val += s->val;
+    return thiz;
+}
+
+vmClassInstance *StringBuilder::append(vmClassInstance *_thiz, vmLong*o)
+{
+    StringBuilderInstance *thiz = static_cast<StringBuilderInstance *>(_thiz);
+    thiz->val += std::to_string(o->val);
+    return thiz;
+}
+
+vmClassInstance *StringBuilder::append(vmClassInstance *_thiz, vmDouble*o)
+{
+    StringBuilderInstance *thiz = static_cast<StringBuilderInstance *>(_thiz);
+    thiz->val += std::to_string(o->val);
+    return thiz;
+}
+
+vmString *StringBuilder::toString(vmClassInstance *_thiz)
+{
+    StringBuilderInstance *thiz = static_cast<StringBuilderInstance *>(_thiz);
+    return new vmString(thiz->val);
+}
+
+
+vmClassInstance *StringBuilder::newInstance()
+{
+    return new StringBuilderInstance(this);
+    /*
+    vmClass *res = new StringBuilderInstance(false);
     vmClass *b = this;
     while (b->baseClass != nullptr) {
         b = b->baseClass;
     }
     res->baseClass = b;
     return res;
+    */
 }
 
 ClassLangString::ClassLangString()
     : vmClass("java/lang/String")
 {
+    addFunction(new FunctionDesc("<init>", "()V"));
+    addFunction(new FunctionDesc("append", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"));
+#if 0
     setFunction("<init>", [](vmClass *clz, vmStack *st) {
         vmClass *thiz = vmClass::castFrom(st->pop());
         (void)thiz;
@@ -105,11 +155,45 @@ ClassLangString::ClassLangString()
             throw "*** ERROR: Can't replaceAll, wrong arguments";
         }
     });
+#endif
 }
 
-vmClass *ClassLangString::newInstance()
+void ClassLangString::_init_(vmClassInstance *_thiz)
 {
+    ClassLangStringInstance *thiz = static_cast<ClassLangStringInstance *>(_thiz);
+    thiz->val = new vmString();
+}
+
+ClassLangStringInstance *ClassLangString::replaceAll(vmClassInstance *_thiz, vmString *hey, vmString *rpl)
+{
+    ClassLangStringInstance *thiz = static_cast<ClassLangStringInstance *>(_thiz);
+    size_t start_pos = 0;
+    while ((start_pos = thiz->val->val.find(hey->val, start_pos)) != std::string::npos) {
+        thiz->val->val.replace(start_pos, hey->val.length(), rpl->val);
+        start_pos += rpl->val.length();
+    }
+    return thiz;
+}
+
+#if 0
+vmString *ClassLangString::replaceAll(vmClassInstance * _thiz, /*vmString *thiz,*/ vmString *hey, vmString *rpl)
+{
+    ClassLangStringInstance *thiz = static_cast<ClassLangStringInstance *>(_thiz);
+    size_t start_pos = 0;
+    while ((start_pos = thiz->val.find(hey->val, start_pos)) != std::string::npos) {
+        thiz->val.replace(start_pos, hey->val.length(), rpl->val);
+        start_pos += rpl->val.length();
+    }
+    return thiz;
+}
+#endif
+
+vmClassInstance *ClassLangString::newInstance()
+{
+    return new ClassLangStringInstance(this);
+    /*
     vmClass *res = new ClassLangString();
     res->baseClass = this;
     return res;
+    */
 }

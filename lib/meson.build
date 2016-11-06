@@ -8,6 +8,7 @@ libclass = static_library('class',
         'printstream.cpp',
     ],
     include_directories: [
-        main_inc
+        main_inc,
+        lib_inc
     ]
 )

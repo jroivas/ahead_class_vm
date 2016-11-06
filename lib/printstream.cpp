@@ -5,6 +5,9 @@
 PrintStream::PrintStream()
     : vmClass("java/io/PrintStream")
 {
+    addFunction(new FunctionDesc("<init>", "()V"));
+    addFunction(new FunctionDesc("println", "(Ljava/lang/String;)V"));
+/*
     setFunction("<init>", [](vmClass *clz, vmStack *st) {
         vmClass *thiz = vmClass::castFrom(st->pop());
         (void)thiz;
@@ -23,11 +26,31 @@ PrintStream::PrintStream()
         std::cout << "\n";
 
     });
+*/
 }
 
-vmClass *PrintStream::newInstance()
+void PrintStream::_init_(vmClassInstance *thiz)
 {
+}
+
+void PrintStream::println(vmClassInstance *_thiz, vmString *o)
+{
+    //PrintStreamInstance *thiz = static_cast<PrintStreamInstance *>(_thiz);
+    std::cout << o->val << "\n";
+}
+
+void PrintStream::println(vmClassInstance *_thiz, ClassLangStringInstance *o)
+{
+    //PrintStreamInstance *thiz = static_cast<PrintStreamInstance *>(_thiz);
+    std::cout << o->val->val << "\n";
+}
+
+vmClassInstance *PrintStream::newInstance()
+{
+    return new PrintStreamInstance(this);
+    /*
     vmClass *res = new PrintStream();
     res->baseClass = this;
     return res;
+    */
 }

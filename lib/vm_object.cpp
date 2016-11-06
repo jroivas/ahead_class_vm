@@ -12,6 +12,7 @@ std::string typeName(vmObject *o) {
             case TYPE_DOUBLE: return "Double";
             case TYPE_REF: return "Ref";
             case TYPE_CLASS: return "Class";
+            case TYPE_CLASS_INST: return "ClassInst";
         }
     }
     return "INVALID";
@@ -38,6 +39,7 @@ FunctionDesc *vmClass::getFunction(std::string name)
 }
 #endif
 
+#if 0
 void vmClass::setFunction(std::string name, FunctionDesc *f)
 {
     if (baseClass == nullptr) {
@@ -48,6 +50,7 @@ void vmClass::setFunction(std::string name, FunctionDesc *f)
         methods[name] = f;
     }
 }
+#endif
 
 std::string formatType(std::string val, uint32_t array)
 {
@@ -56,6 +59,22 @@ std::string formatType(std::string val, uint32_t array)
         val+= "[]";
     }
     return val;
+}
+
+std::string typeToNative(std::string val)
+{
+    if (val == "void") return "void";
+    if (val == "byte") return "uint8_t";
+    if (val == "char") return "char";
+    if (val == "double") return "vmDouble*";
+    if (val == "float") return "vmFloat*";
+    if (val == "int") return "vmInteger*";
+    if (val == "long") return "vmLong*";
+    if (val == "short") return "vmInteger*"; //FIXME
+    if (val == "bool") return "bool";
+    if (val == "java/lang/String") return "vmString*";
+    //FIXME
+    return "vmObject* /* " + val + " */";
 }
 
 std::vector<std::string> parseField(std::string f)

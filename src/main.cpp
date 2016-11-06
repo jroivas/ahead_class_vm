@@ -4,8 +4,11 @@
 #include <algorithm>
 #include <vm.h>
 
+#include <lib/runtime.h>
+/*
 #include <lib/stringbuilder.h>
 #include <lib/printstream.h>
+*/
 
 int main(int argc, char **argv)
 {
@@ -48,6 +51,7 @@ int main(int argc, char **argv)
     preload.push_back(new StringBuilder());
     preload.push_back(new PrintStream());
     preload.push_back(new ClassLangString());
+    preload.push_back(new LangObject());
 
     for (auto me : m.methods) {
         uint16_t i = 1;
@@ -111,6 +115,9 @@ int main(int argc, char **argv)
     std::cout << "        class_main();\n";
     std::cout << "    }\n";
     std::cout << "    catch (const char* m) {\n";
+    std::cout << "        std::cerr << \"ERROR: \" << m << std::endl;\n";
+    std::cout << "    }\n";
+    std::cout << "    catch (std::string m) {\n";
     std::cout << "        std::cerr << \"ERROR: \" << m << std::endl;\n";
     std::cout << "    }\n";
     std::cout << "    return ret;\n";

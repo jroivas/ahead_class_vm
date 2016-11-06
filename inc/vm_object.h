@@ -25,7 +25,8 @@ enum vmType {
     TYPE_FLOAT,
     TYPE_DOUBLE,
     TYPE_REF,
-    TYPE_CLASS
+    TYPE_CLASS,
+    TYPE_CLASS_INST
 };
 
 typedef int32_t nInteger;
@@ -53,16 +54,22 @@ class vmClass;
 
 std::vector<std::string> parseField(std::string);
 std::pair<std::string,std::string> parseParams(std::string);
+std::string typeToNative(std::string val);
 
 class FunctionDesc
 {
 public:
-    FunctionDesc(std::function<void(vmClass *, vmStack *)> f) : func(f), init(false) { }
+    FunctionDesc(std::string _name, std::string desc) {
+        name = _name;
+        parse(desc);
+    }
+    //FunctionDesc(std::function<void(vmClass *, vmStack *)> f) : func(f), init(false) { }
     std::function<void(vmClass *, vmStack *)> func;
+    std::string name;
     std::string description;
     std::string returnType;
     std::vector<std::string> params;
-    bool init;
+    //bool init;
     void parse(std::string desc) {
         description = desc;
         std::pair<std::string, std::string> rr = parseParams(description);
@@ -71,22 +78,34 @@ public:
         if (!ret.empty()) {
             returnType = ret[0];
         }
-        init = true;
+        //init = true;
     }
+};
+
+class vmClassInstance : public vmObject
+{
+public:
+    vmClassInstance(vmClass *b) : vmObject(TYPE_CLASS_INST), base(b) {}
+    vmClass *base;
+
+    static vmClassInstance* castFrom(vmObject* o)
+    {
+        if (!o) throw "Nullptr";
+        return o->type == TYPE_CLASS_INST ? static_cast<vmClassInstance *>(o) : nullptr;
+    }
+
 };
 
 class vmClass : public vmObject
 {
 public:
-    vmClass(std::string n, bool doReg=true) : vmObject(TYPE_CLASS), /* name(n),*/ baseClass(nullptr) {
-        if (doReg) {
-            name = n;
-            registerClass(this);
-        }
+    vmClass(std::string n) : vmObject(TYPE_CLASS), name(n) {
+        name = n;
+        registerClass(this);
     }
     virtual ~vmClass() {}
-    virtual vmClass *newInstance() = 0;
-    bool isBaseClass() { return baseClass == nullptr; }
+    virtual vmClassInstance *newInstance() = 0;
+    //bool isBaseClass() { return baseClass == nullptr; }
 
     static vmClass* castFrom(vmObject* o)
     {
@@ -94,37 +113,66 @@ public:
         return o->type == TYPE_CLASS ? static_cast<vmClass *>(o) : nullptr;
     }
 
-    inline FunctionDesc *getFunction(std::string name)
+    inline FunctionDesc *getFunction(std::string name, std::string desc="")
     {
-        if (baseClass != nullptr) {
+        /*if (baseClass != nullptr) {
             return baseClass->getFunction(name);
         }
         return methods[name];
+        */
+        for (auto m : methods) {
+            if (m->name == name) {
+                bool ok = true;
+                if (!desc.empty() && m->description == desc) ok = true;
+                else ok = false;
+
+                if (ok) return m;
+            }
+        }
+
+        return nullptr;
     }
 
     //FunctionDesc *getFunction(std::string name);
+    /*
     void setFunction(std::string name, std::function<void(vmClass *, vmStack *)> f) {
         setFunction(name, new FunctionDesc(f));
     }
     void setFunction(std::string name, FunctionDesc *f);
+    */
+    void addFunction(FunctionDesc *f) {
+        methods.push_back(f);
+    }
 
     std::string val;
     std::string name;
-    vmClass *baseClass;
-    std::unordered_map<std::string, FunctionDesc*> methods;
+    //vmClass *baseClass;
+    //std::unordered_map<std::string, FunctionDesc*> methods;
+    std::vector<FunctionDesc*> methods;
 };
 
+class SystemPrinterInstance : public vmClassInstance
+{
+public:
+    SystemPrinterInstance(vmClass *base) : vmClassInstance(base) {}
+};
 class SystemPrinter : public vmClass
 {
 public:
     // FIXME
     SystemPrinter() : vmClass("SystemPrinter") {}
     virtual ~SystemPrinter() {}
+    virtual vmClassInstance *newInstance() {
+        return new SystemPrinterInstance(this);
+    }
+
+    /*
     virtual vmClass *newInstance() {
         SystemPrinter* p = new SystemPrinter();
         p->baseClass = this;
         return p;
     }
+    */
 };
 
 class vmString : public vmObject
