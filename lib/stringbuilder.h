@@ -44,7 +44,8 @@ public:
     virtual vmClassInstance *newInstance();
 
     void _init_(vmClassInstance *thiz);
-    ClassLangStringInstance *replaceAll(vmClassInstance *thiz, vmString *hey, vmString *rpl);
+    vmString *replaceAll(vmClassInstance *thiz, vmString *hey, vmString *rpl);
+    //ClassLangStringInstance *replaceAll(vmString *thiz, vmString *hey, vmString *rpl);
     //vmString *replaceAll(vmClassInstance *thiz, /*vmString *thiz,*/ vmString *hey, vmString *rpl);
     //std::string val;
 };

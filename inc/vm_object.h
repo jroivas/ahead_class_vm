@@ -38,14 +38,10 @@ typedef std::string nString;
 class vmObject
 {
 public:
-    vmObject() : classFile(nullptr), type(TYPE_INV) {}
-    vmObject(vmType t) : classFile(nullptr), type(t) {}
-    vmObject(vmClassFile *cl) : classFile(cl) {}
+    vmObject() : type(TYPE_INV) {}
+    vmObject(vmType t) : type(t) {}
     virtual ~vmObject() {}
 
-    vmClassFile *classFile;
-
-    void init() {}
     vmType type;
 };
 
@@ -85,8 +81,11 @@ public:
 class vmClassInstance : public vmObject
 {
 public:
+    vmClassInstance(vmClass *b) : vmObject(TYPE_CLASS_INST) {}
+    /*
     vmClassInstance(vmClass *b) : vmObject(TYPE_CLASS_INST), base(b) {}
     vmClass *base;
+    */
 
     static vmClassInstance* castFrom(vmObject* o)
     {
@@ -156,6 +155,7 @@ class SystemPrinterInstance : public vmClassInstance
 public:
     SystemPrinterInstance(vmClass *base) : vmClassInstance(base) {}
 };
+
 class SystemPrinter : public vmClass
 {
 public:
@@ -175,16 +175,21 @@ public:
     */
 };
 
-class vmString : public vmObject
+class vmString : public vmClassInstance
 {
 public:
-    vmString() : vmObject(TYPE_STRING), val("") {}
+    /*vmString() : vmObject(TYPE_STRING), val("") {}
     vmString(std::string v) : vmObject(TYPE_STRING), val(v) {}
+    */
+    vmString() : vmClassInstance(nullptr) {}
+    vmString(std::string v) : vmClassInstance(nullptr), val(v) {}
     std::string val;
     static vmString* castFrom(vmObject* o)
     {
         if (!o) throw "Nullptr";
-        return o->type == TYPE_STRING ? static_cast<vmString *>(o) : nullptr;
+        if (o->type == TYPE_STRING) return static_cast<vmString *>(o);
+        return o->type == TYPE_CLASS_INST ? dynamic_cast<vmString *>(o) : nullptr;
+        //return o->type == TYPE_STRING ? static_cast<vmString *>(o) : nullptr;
     }
 };
 

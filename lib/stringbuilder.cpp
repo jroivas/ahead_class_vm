@@ -126,7 +126,7 @@ ClassLangString::ClassLangString()
     : vmClass("java/lang/String")
 {
     addFunction(new FunctionDesc("<init>", "()V"));
-    addFunction(new FunctionDesc("append", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"));
+    addFunction(new FunctionDesc("replaceAll", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"));
 #if 0
     setFunction("<init>", [](vmClass *clz, vmStack *st) {
         vmClass *thiz = vmClass::castFrom(st->pop());
@@ -162,15 +162,19 @@ void ClassLangString::_init_(vmClassInstance *_thiz)
     thiz->val = new vmString();
 }
 
-ClassLangStringInstance *ClassLangString::replaceAll(vmClassInstance *_thiz, vmString *hey, vmString *rpl)
+vmString *ClassLangString::replaceAll(vmClassInstance *_thiz, vmString *hey, vmString *rpl)
 {
-    ClassLangStringInstance *thiz = static_cast<ClassLangStringInstance *>(_thiz);
+    //ClassLangStringInstance *thiz = static_cast<ClassLangStringInstance *>(_thiz);
+    vmString *thiz = dynamic_cast<vmString *>(_thiz);
     size_t start_pos = 0;
-    while ((start_pos = thiz->val->val.find(hey->val, start_pos)) != std::string::npos) {
-        thiz->val->val.replace(start_pos, hey->val.length(), rpl->val);
+    //while ((start_pos = thiz->val->val.find(hey->val, start_pos)) != std::string::npos) {
+    while ((start_pos = thiz->val.find(hey->val, start_pos)) != std::string::npos) {
+        thiz->val.replace(start_pos, hey->val.length(), rpl->val);
+        //thiz->val->val.replace(start_pos, hey->val.length(), rpl->val);
         start_pos += rpl->val.length();
     }
     return thiz;
+    //return thiz->val;
 }
 
 #if 0
