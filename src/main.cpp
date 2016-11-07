@@ -120,6 +120,7 @@ int main(int argc, char **argv)
     std::cout << "    catch (std::string m) {\n";
     std::cout << "        std::cerr << \"ERROR: \" << m << std::endl;\n";
     std::cout << "    }\n";
+    //std::cout << "    malloc_stats_print(NULL, NULL, NULL);\n";
     std::cout << "    return ret;\n";
     std::cout << "}\n";
 
