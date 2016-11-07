@@ -209,7 +209,7 @@ public:
     uint32_t val;
     static vmInteger* castFrom(vmObject* o)
     {
-        if (!o) throw "Nullptr";
+        if (!o) throw "Int: Nullptr";
         return o->type == TYPE_INTEGER ? static_cast<vmInteger *>(o) : nullptr;
     }
 };
@@ -222,7 +222,7 @@ public:
     uint64_t val;
     static vmLong* castFrom(vmObject* o)
     {
-        if (!o) throw "Nullptr";
+        if (!o) throw "Long: Nullptr";
         return o->type == TYPE_LONG ? static_cast<vmLong *>(o) : nullptr;
     }
 };

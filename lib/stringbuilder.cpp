@@ -76,9 +76,6 @@ StringBuilder::StringBuilder()
 void StringBuilder::_init_(vmClassInstance *_thiz)
 {
     StringBuilderInstance *thiz = dynamic_cast<StringBuilderInstance *>(_thiz);
-    if (!thiz) {
-        throw "ERR: Wrong type: " + typeName(_thiz);
-    }
     thiz->val.val = "";
 }
 

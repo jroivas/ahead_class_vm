@@ -67,11 +67,21 @@ std::string VM::transcompile(std::string name, vmCodeAttribute *code)
     pre += indent() + "vmObject *" + fname +  "() {\n";
 
     iin();
-    pre += indent() + "vmStack *stack = new vmStack(" + std::to_string(code->max_stack) + ");\n";
+    //pre += indent() + "vmStack *stack = new vmStack(" + std::to_string(code->max_stack) + ");\n";
+    res += indent() + "uint32_t stackpos = 0;\n";
+    res += indent() + "vmObject *stack[" + std::to_string(code->max_stack) + "];\n";
+    for (uint16_t stacks = 0; stacks < code->max_stack; ++stacks) {
+        res += indent() + "stack[" + std::to_string(stacks) + "] = nullptr;\n";
+    }
     pre += indent() + "vmObject *retVal = nullptr;\n";
-    for (uint16_t locals = 0; locals < code->max_locals; locals++) {
+    for (uint16_t locals = 0; locals < code->max_locals; ++locals) {
+        res += indent() + "vmObject *local" + std::to_string(locals) + " = nullptr;\n";
+    }
+    /*
+    for (uint16_t locals = 0; locals < code->max_locals; ++locals) {
         res += indent() + "vmLocal local" + std::to_string(locals) + ";\n";
     }
+    */
     pc = 0;
     ptr = code->code;
     while (pc < code->code_length) {
@@ -151,7 +161,8 @@ std::string VM::genCode(uint8_t opcode, std::string &name)
             return gen_lload(3);
 
         case 0x2a:
-            return indent() + "stack->push(&local0);\n";
+            return indent() + "stack[stackpos++] = local0;\n";
+            //return indent() + "stack->push(&local0);\n";
 
         case 0x3a:
             return gen_astore_idx();
@@ -232,15 +243,20 @@ std::string VM::gen_ldc_idx(uint16_t idx)
 
     switch (tmp->tag) {
         case C_Integer:
-            return indent() + "stack->pushInteger(" + std::to_string(((vmConstantInteger*)tmp)->val.val) + ");\n";
+            return indent() + "stack[stackpos++] = new vmInteger(" + std::to_string(((vmConstantInteger*)tmp)->val.val) + ");\n";
+            //return indent() + "stack->pushInteger(" + std::to_string(((vmConstantInteger*)tmp)->val.val) + ");\n";
         case C_Long:
-            return indent() + "stack->pushLong(" + std::to_string(((vmConstantLong*)tmp)->val.val) + ");\n";
+            return indent() + "stack[stackpos++] = new vmLong(" + std::to_string(((vmConstantLong*)tmp)->val.val) + ");\n";
+            //return indent() + "stack->pushLong(" + std::to_string(((vmConstantLong*)tmp)->val.val) + ");\n";
         case C_Float:
-            return indent() + "stack->pushFloat(" + std::to_string(((vmConstantFloat*)tmp)->val.val) + ");\n";
+            return indent() + "stack[stackpos++] = new vmFloat(" + std::to_string(((vmConstantFloat*)tmp)->val.val) + ");\n";
+            //return indent() + "stack->pushFloat(" + std::to_string(((vmConstantFloat*)tmp)->val.val) + ");\n";
         case C_Double:
-            return indent() + "stack->pushDouble(" + std::to_string(((vmConstantDouble*)tmp)->val.val) +");\n";
+            return indent() + "stack[stackpos++] = new vmDouble(" + std::to_string(((vmConstantDouble*)tmp)->val.val) + ");\n";
+            //return indent() + "stack->pushDouble(" + std::to_string(((vmConstantDouble*)tmp)->val.val) +");\n";
         case C_String: {
-            return indent() + "stack->pushObject(new vmString(\"" + (parseRefUtf8((vmConstantString*)tmp)->str()) +"\"));\n";
+            return indent() + "stack[stackpos++] = new vmString(\"" + (parseRefUtf8((vmConstantString*)tmp)->str()) +"\");\n";
+            //return indent() + "stack->pushObject(new vmString(\"" + (parseRefUtf8((vmConstantString*)tmp)->str()) +"\"));\n";
         }
         default:
             std::cout <<  "Invalid object: " << idx << " " << tmp << "\n";
@@ -250,47 +266,63 @@ std::string VM::gen_ldc_idx(uint16_t idx)
 
 std::string VM::gen_iconst(int16_t val)
 {
-    return indent() + "stack->pushInteger(" + std::to_string(val) + ");\n";
+    return indent() + "stack[stackpos++] = new vmInteger(" + std::to_string(val) + ");\n";
+    //return indent() + "stack->pushInteger(" + std::to_string(val) + ");\n";
 }
 
 std::string VM::gen_iload(int16_t index)
 {
-    return indent() + "stack->pushInteger(local" + std::to_string(index) + ".val_int);\n";
+    return indent() + "stack[stackpos++] = local" + std::to_string(index) + ";\n";
+    //return indent() + "stack->pushInteger(local" + std::to_string(index) + ".val_int);\n";
 }
 
 std::string VM::gen_aload()
 {
     uint8_t index = fetch();
-    return indent() + "stack->pushObject(local" + std::to_string(index) + ".val_obj);\n";
+    return indent() + "stack[stackpos++] = local" + std::to_string(index) + ";\n";
+    //return indent() + "stack->pushObject(local" + std::to_string(index) + ".val_obj);\n";
 }
 
 std::string VM::gen_astore_idx()
 {
     uint8_t idx = fetch();
     // FIXME
-    return indent() + "local" + std::to_string(idx) + ".val_obj = stack->pop();\n";
+    return indent() + "local" + std::to_string(idx) + " = stack[--stackpos];\n";
+    //return indent() + "local" + std::to_string(idx) + ".val_obj = stack->pop();\n";
 }
 
 std::string VM::gen_istore(int16_t index)
 {
-    return indent() + "local" + std::to_string(index) + ".val_int = stack->popInteger();\n";
+    return indent() + "local" + std::to_string(index) + " = stack[--stackpos];\n";
+    //return indent() + "local" + std::to_string(index) + ".val_int = stack->popInteger();\n";
 }
 
 std::string VM::gen_lload(int16_t index)
 {
-    return indent() + "stack->pushLong(local" + std::to_string(index) + ".val_long);\n";
+    return indent() + "stack[stackpos++] = local" + std::to_string(index) + ";\n";
+    //return indent() + "stack->pushLong(local" + std::to_string(index) + ".val_long);\n";
 }
 
 std::string VM::gen_lstore(int16_t index)
 {
-    return indent() + "local" + std::to_string(index) + ".val_long = stack->popLong();\n";
+    //return indent() + "local" + std::to_string(index) + ".val_long = stack->popLong();\n";
+    return indent() + "local" + std::to_string(index) + " = stack[--stackpos];\n";
 }
 
 std::string VM::gen_l2d()
 {
-    std::string res = "";
-    res += indent() + "stack->pushDouble(stack->popLong());\n";
-    return res;
+    /*
+    return indent() + "{\n";
+    return indent() + "vmDouble *d = new vmDouble(vmLong::castFrom(stack[--stackpos])->val);\n";
+    return indent() + "stack[stackpos++] = d;\n";
+    return indent() + "}\n";
+    */
+    return indent() + "stack[stackpos - 1] = new vmDouble(vmLong::castFrom(stack[stackpos - 1])->val);\n";
+
+    //return indent() + "stack[stackpos] = new vmDouble(vmLong::castFrom(stack[stackpos])->val);\n";
+    //res += indent() + "stack->pushDouble(stack->popLong());\n";
+    //std::string res = "";
+    //return res;
 }
 
 std::string VM::gen_iinc()
@@ -298,7 +330,8 @@ std::string VM::gen_iinc()
     uint8_t index = fetch();
     uint8_t val = fetch();
     // FIXME
-    return indent() + "local" + std::to_string(index) + ".val_int += " +std::to_string(val) + ";\n";
+    return indent() + "vmInteger::castFrom(local" + std::to_string(index) + ")->val += " +std::to_string(val) + ";\n";
+    //return indent() + "local" + std::to_string(index) + ".val_int += " +std::to_string(val) + ";\n";
 }
 
 std::string VM::gen_lsub()
@@ -307,9 +340,14 @@ std::string VM::gen_lsub()
 
     res += indent() + "{\n";
     iin();
+    res += indent() + "vmLong *v1 = vmLong::castFrom(stack[--stackpos]);\n";
+    res += indent() + "vmLong *v2 = vmLong::castFrom(stack[--stackpos]);\n";
+    res += indent() + "stack[stackpos++] = new vmLong(v2->val - v1->val);\n";
+/*
     res += indent() + "nLong v1 = stack->popLong();\n";
     res += indent() + "nLong v2 = stack->popLong();\n";
     res += indent() + "stack->pushLong(v2 - v1);\n";
+*/
     din();
     res += indent() + "}\n";
     /*
@@ -325,7 +363,10 @@ std::string VM::gen_dmul()
 {
     std::string res = "";
 
-    res += indent() + "stack->pushDouble(stack->popDouble() * stack->popDouble());\n";
+    res += indent() + "vmDouble *v1 = vmDouble::castFrom(stack[--stackpos]);\n";
+    res += indent() + "vmDouble *v2 = vmDouble::castFrom(stack[--stackpos]);\n";
+    res += indent() + "stack[stackpos++] = new vmDouble(v2->val * v1->val);\n";
+    //res += indent() + "stack->pushDouble(stack->popDouble() * stack->popDouble());\n";
 
     return res;
 }
@@ -337,10 +378,16 @@ std::string VM::gen_ddiv()
     
     res += indent() + "{\n";
     iin();
+    /*
     res += indent() + "double v1 = stack->popDouble();\n";
     res += indent() + "double v2 = stack->popDouble();\n";
     res += indent() + "if (v1 == 0) throw \"Divide by zero\";\n";
     res += indent() + "stack->pushDouble(v2 / v1);\n";
+    */
+    res += indent() + "vmDouble *v1 = vmDouble::castFrom(stack[--stackpos]);\n";
+    res += indent() + "vmDouble *v2 = vmDouble::castFrom(stack[--stackpos]);\n";
+    res += indent() + "if (v1 == 0) throw \"Divide by zero\";\n";
+    res += indent() + "stack[stackpos++] = new vmDouble(v2->val / v1->val);\n";
     din();
     res += indent() + "}\n";
 
@@ -356,8 +403,9 @@ std::string VM::gen_icmp(uint8_t oper, std::string &name)
     std::string res = "";
     res += indent() + "{\n";
     iin();
-    res += indent() + "nInteger v1 = stack->popInteger();\n";
-    res += indent() + "nInteger v2 = stack->popInteger();\n";
+    res += indent() + "nInteger v1 = vmInteger::castFrom(stack[--stackpos])->val;\n";
+    res += indent() + "nInteger v2 = vmInteger::castFrom(stack[--stackpos])->val;\n";
+    //res += indent() + "nInteger v2 = stack->popInteger();\n";
 
     switch (oper) {
         case CMP_EQ:
@@ -398,7 +446,13 @@ std::string VM::gen_goto(std::string &name)
 std::string VM::gen_dup()
 {
     std::string res;
-    res += indent() + "stack->dup();\n";
+    res += indent() + "{\n";
+    iin();
+    res += indent() + "stack[stackpos] = stack[stackpos - 1];\n";
+    res += indent() + "++stackpos;\n";
+    din();
+    res += indent() + "}\n";
+    //res += indent() + "stack->dup();\n";
     return res;
 }
 
@@ -417,7 +471,8 @@ std::string VM::gen_new()
     //res += indent() + "vmClass *c = loadClass(\"" + classname->str() + "\");\n";
     //res += indent() + "vmClass *c = loadClass(\"" + classname->str() + "\");\n";
     //res += indent() + "stack->push(c->newInstance());\n";
-    res += indent() + "stack->push(" + n + "->newInstance());\n";
+    //res += indent() + "stack->push(" + n + "->newInstance());\n";
+    res += indent() + "stack[stackpos++] = " + n + "->newInstance();\n";
     din();
     res += indent() + "}\n";
     return res;
@@ -441,7 +496,8 @@ std::string VM::gen_invokeStatic()
         iin();
         res += indent() + "struct timespec tt_" + std::to_string(++_temp) + ";\n";
         res += indent() + "clock_gettime(CLOCK_REALTIME, &tt_" + std::to_string(_temp) + ");\n";
-        res += indent() + "stack->pushLong(tt_" + std::to_string(_temp) + ".tv_sec * 1000 + tt_" + std::to_string(_temp) + ".tv_nsec / 1000000);\n";
+        //res += indent() + "stack->pushLong(tt_" + std::to_string(_temp) + ".tv_sec * 1000 + tt_" + std::to_string(_temp) + ".tv_nsec / 1000000);\n";
+        res += indent() + "stack[stackpos++] = new vmLong(tt_" + std::to_string(_temp) + ".tv_sec * 1000 + tt_" + std::to_string(_temp) + ".tv_nsec / 1000000);\n";
         din();
         res += indent() + "}\n";
         //res += indent() + "stack->push(new vmLong(tt.tv_sec * 1000 + tt.tv_nsec / 1000000));\n";
@@ -477,7 +533,8 @@ std::string VM::gen_getStatic()
                 res += indent() + "if (!cl) throw \"Can't load class\";\n";
                 res += indent() + "stack->push(cl);\n";
                 */
-                res += indent() + "stack->push(" + n + ");\n";
+                //res += indent() + "stack->push(" + n + ");\n";
+                res += indent() + "stack[stackpos++] = " + n + ";\n";
                 din();
                 res += indent() + "}\n";
                 return res;
@@ -521,14 +578,16 @@ std::string VM::gen_invokeVirtual()
     for (uint32_t pi = fdesc->params.size(); pi > 0; --pi) {
         std::string pname = fdesc->params[pi - 1];
         std::string ptype = typeToNative(pname);
-        res += indent() + ptype + " p" + std::to_string(pi - 1) + " = (" + ptype +" )stack->pop();\n";
+        //res += indent() + ptype + " p" + std::to_string(pi - 1) + " = (" + ptype +" )stack->pop();\n";
+        res += indent() + ptype + " p" + std::to_string(pi - 1) + " = (" + ptype +" )stack[--stackpos];\n";
     }
 
     std::string rettype = "";
     if (!fdesc->returnType.empty()) {
         rettype = typeToNative(fdesc->returnType) + " retVal = ";
     }
-    res += indent() + "vmClassInstance *thiz = vmClassInstance::castFrom(stack->pop());\n";
+    //res += indent() + "vmClassInstance *thiz = vmClassInstance::castFrom(stack->pop());\n";
+    res += indent() + "vmClassInstance *thiz = vmClassInstance::castFrom(stack[--stackpos]);\n";
     res += indent() + rettype + n + "->" + c + "(";
     res += "thiz";
     for (uint32_t pi = 0; pi < fdesc->params.size(); ++pi) {
@@ -537,7 +596,8 @@ std::string VM::gen_invokeVirtual()
     }
     res += ");\n";
     if (!rettype.empty()) {
-        res += indent() + "stack->push(retVal);\n";
+        //res += indent() + "stack->push(retVal);\n";
+        res += indent() + "stack[stackpos++] = retVal;\n";
     }
     //res += indent() + c + "->func(" + n + ", stack);\n";
     /*
