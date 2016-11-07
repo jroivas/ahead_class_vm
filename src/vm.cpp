@@ -386,7 +386,7 @@ std::string VM::gen_ddiv()
     */
     res += indent() + "vmDouble *v1 = vmDouble::castFrom(stack[--stackpos]);\n";
     res += indent() + "vmDouble *v2 = vmDouble::castFrom(stack[--stackpos]);\n";
-    res += indent() + "if (v1 == 0) throw \"Divide by zero\";\n";
+    res += indent() + "if (v1->val == 0) throw \"Divide by zero\";\n";
     res += indent() + "stack[stackpos++] = new vmDouble(v2->val / v1->val);\n";
     din();
     res += indent() + "}\n";

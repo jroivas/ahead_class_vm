@@ -9,10 +9,10 @@
 #include <utility>
 #include <iostream>
 
-/*
 #include <gc/gc.h>
 #include <gc/gc_cpp.h>
 #include <gc/gc_allocator.h>
+/*
 */
 
 class vmClassFile;
@@ -37,10 +37,10 @@ typedef float nFloat;
 typedef double nDouble;
 typedef std::string nString;
 
-class vmObject
+class vmObject : public gc
 {
 public:
-    vmObject() : type(TYPE_INV) {}
+    vmObject() : gc(), type(TYPE_INV) {}
     vmObject(vmType t) : type(t) {}
     virtual ~vmObject() {}
 

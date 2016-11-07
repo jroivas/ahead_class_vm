@@ -17,5 +17,8 @@ ahead_class_vm = executable('ahead_class_vm',
     link_with: [
         libclass
     ],
-    link_args: '-ljemalloc'
+    link_args: [
+        #'-ljemalloc',
+        '-lgc'
+    ]
 )

@@ -76,7 +76,8 @@ StringBuilder::StringBuilder()
 void StringBuilder::_init_(vmClassInstance *_thiz)
 {
     StringBuilderInstance *thiz = dynamic_cast<StringBuilderInstance *>(_thiz);
-    thiz->val.val = "";
+    thiz->val.val = std::string();
+    //thiz->val.val = "";
 }
 
 vmClassInstance *StringBuilder::append(vmClassInstance *_thiz, vmString *s)
