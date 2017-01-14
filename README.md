@@ -16,7 +16,7 @@ as well as translator itself.
 
 ## Building
 
-You need (meson)[http://mesonbuild.com/] and (ninja)[https://ninja-build.org/].
+You need [meson](http://mesonbuild.com/) and [ninja](https://ninja-build.org/).
 
     mkdir build
     cd build
