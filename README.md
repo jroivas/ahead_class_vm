@@ -31,7 +31,7 @@ After that you should have `src/ahead_class_vm` binary, which is the translator.
 Next you need some class files. There's included one in `examples` folder.
 Compile it with java compliler:
 
-    cd examples
+    cd ../examples
     javac hello.java
     cd ../build
 
@@ -50,4 +50,4 @@ Missing many opcodes, support for multiple class files, etc.
 
 ## LICENSE
 
-MIT, see LICENSE
+MIT, see [LICENSE](LICENSE).
