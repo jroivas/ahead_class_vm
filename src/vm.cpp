@@ -26,11 +26,6 @@ VM::VM(vmClassFile *_cl, vmStack *_stack)
     _indent(0),
     _temp(0)
 {
-    /*
-    for (uint8_t i = 0; i < 100; ++i) {
-        locals.push_back(nullptr);
-    }
-    */
 }
 
 void VM::addClassRef(vmClassFile *cl)
@@ -505,7 +500,7 @@ std::string VM::gen_invokeStatic()
         }
     }
     if (!ok) {
-        throw "Invalid call";
+        throw "Invalid call: " + classname->str() + " " + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str();
     }
     return res;
 }
