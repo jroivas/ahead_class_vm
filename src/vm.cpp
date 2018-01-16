@@ -158,6 +158,8 @@ std::string VM::genCode(uint8_t opcode, std::string &name)
         case 0x2a:
             return indent() + "stack[stackpos++] = local0;\n";
             //return indent() + "stack->push(&local0);\n";
+        case 0x2b:
+            return indent() + "stack[stackpos++] = local1;\n";
 
         case 0x3a:
             return gen_astore_idx();
@@ -201,6 +203,8 @@ std::string VM::genCode(uint8_t opcode, std::string &name)
             return indent() + "return retVal;\n";
         case 0xb2:
             return gen_getStatic();
+        case 0xb5:
+            return gen_putField();
         case 0xb6:
             return gen_invokeVirtual();
         case 0xb7:
@@ -539,6 +543,19 @@ std::string VM::gen_getStatic()
     throw "Invalid static";
 }
 
+std::string VM::gen_putField()
+{
+    uint16_t idx = fetch16();
+
+    vmConstantRef *idxRef = parseRef(idx);
+    std::cerr << " IDXREF1 " << idxRef << "\n";
+    vmConstantNameAndType *nametype = parseRefNameType(idxRef);
+    std::cerr << " IDXREF2 " << nametype << "\n";
+    std::cerr << "  NT " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
+
+    return "";
+}
+
 std::string VM::gen_invokeVirtual()
 {
     uint16_t idx = fetch16();
@@ -733,6 +750,13 @@ void VM::decode(uint8_t opcode)
             }
             stack->push(locals[0]);
             break;
+        case 0x2b:
+            if (locals.empty()) {
+                //solve "this" object from cl
+                //locals.push_back(new vmObject(cl));
+            }
+            stack->push(locals[1]);
+            break;
         case 0x3a:
             astore_idx();
             break;
@@ -789,6 +813,9 @@ void VM::decode(uint8_t opcode)
             return;
         case 0xb2:
             getStatic();
+            break;
+        case 0xb5:
+            putField();
             break;
         case 0xb6:
             invokeVirtual();
@@ -915,6 +942,11 @@ void VM::invokeSpecial()
     std::cout << " Type  " << ((vmConstantUtf8 *)(nametype->resolve2(cl->constant_pool)))->str() << "\n";
     throw "Invalid call";
     */
+}
+
+void VM::putField()
+{
+    throw std::string("Unimplemented");
 }
 
 void VM::invokeVirtual()

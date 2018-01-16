@@ -16,6 +16,10 @@ as well as translator itself.
 
 ## Building
 
+First install dependencies (for example on Ubuntu/Debian):
+
+    sudo apt-get install libgc-dev libjemalloc-dev
+
 You need [meson](http://mesonbuild.com/) and [ninja](https://ninja-build.org/).
 
     mkdir build

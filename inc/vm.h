@@ -30,6 +30,7 @@ private:
     void invokeSpecial();
     void invokeVirtual();
     void invokeStatic();
+    void putField();
     void getStatic();
     void ldc();
     void ldc_w();
@@ -64,6 +65,7 @@ private:
     std::string gen_getStatic();
     std::string gen_invokeStatic();
     std::string gen_invokeVirtual();
+    std::string gen_putField();
     std::string gen_ldc();
     std::string gen_ldc_w();
     std::string gen_ldc_idx(uint16_t idx);
