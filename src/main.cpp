@@ -59,6 +59,15 @@ int main(int argc, char **argv)
 
     std::cout << vm->prefixClass(this_name->str());
 
+    for (auto f : m.fields) {
+        vmConstantUtf8 *type = static_cast<vmConstantUtf8*>(m.constant_pool[f->desc_index]);
+        vmConstantUtf8 *name = static_cast<vmConstantUtf8*>(m.constant_pool[f->name_index]);
+        if (type && name) {
+            std::cerr << "FF " << type->str() << "\n";
+            std::cerr << "FF " << name->str() << "\n";
+        }
+    }
+
     for (auto me : m.methods) {
         uint16_t i = 1;
         vmConstantUtf8 *mu = static_cast<vmConstantUtf8*>(m.constant_pool[me->name_index]);

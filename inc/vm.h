@@ -28,6 +28,12 @@ public:
     std::vector<std::string> parseClassPackage(std::string name);
     std::string parseClassName(std::string name);
 
+    vmConstantRef *parseRef(uint16_t idx);
+    vmConstantClass *parseRefClass(vmConstantRef *ref);
+    vmConstantNameAndType *parseRefNameType(vmConstantRef *ref);
+    vmConstantUtf8 *parseRefUtf8(vmConstantInfo *ref);
+    vmConstantClass *parseClassConstant(uint16_t idx);
+
 private:
     uint8_t fetch();
     uint16_t fetch16();
@@ -89,11 +95,6 @@ private:
     vmLong *toLong(vmObject *);
     vmDouble *toDouble(vmObject *);
 
-    vmConstantRef *parseRef(uint16_t idx);
-    vmConstantClass *parseRefClass(vmConstantRef *ref);
-    vmConstantNameAndType *parseRefNameType(vmConstantRef *ref);
-    vmConstantUtf8 *parseRefUtf8(vmConstantInfo *ref);
-    vmConstantClass *parseClassConstant(uint16_t idx);
     uint8_t _indent;
     uint32_t _temp;
 public:
