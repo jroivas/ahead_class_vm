@@ -53,6 +53,44 @@ std::string VM::fixName(std::string name)
     return res;
 }
 
+std::vector<std::string> VM::parseClassPackage(std::string name)
+{
+    std::vector<std::string> items = utils::split(name.c_str(), '/');
+    items.pop_back();
+    return items;
+}
+
+std::string VM::parseClassName(std::string name)
+{
+    std::vector<std::string> items = utils::split(name.c_str(), '/');
+    if (items.empty()) throw std::string("Invalid class name");
+    return items.back();
+}
+
+std::string VM::prefixClass(std::string name)
+{
+    std::string res = "";
+    std::vector<std::string> namespaces = VM::parseClassPackage(name);
+    for (auto ns : namespaces) {
+        res += "namespace " + ns + " {\n";
+    }
+    res += "class " + parseClassName(name) + "\n{\n";
+    res += "public:\n";
+    return res;
+}
+
+std::string VM::postClass(std::string name)
+{
+    std::string res = "";
+    res += "};\n";
+    std::vector<std::string> namespaces = VM::parseClassPackage(name);
+    for (auto ns : namespaces) {
+        res += "}\n";
+    }
+    return res;
+}
+
+
 std::string VM::transcompile(std::string name, vmCodeAttribute *code)
 {
     std::string res = "";

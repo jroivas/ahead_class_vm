@@ -23,6 +23,11 @@ public:
     vmStack *stack;
     uint8_t *ptr;
 
+    std::string prefixClass(std::string name);
+    std::string postClass(std::string name);
+    std::vector<std::string> parseClassPackage(std::string name);
+    std::string parseClassName(std::string name);
+
 private:
     uint8_t fetch();
     uint16_t fetch16();

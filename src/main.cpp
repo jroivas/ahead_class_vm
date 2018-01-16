@@ -57,6 +57,8 @@ int main(int argc, char **argv)
     preload.push_back(new ClassLangString());
     preload.push_back(new LangObject());
 
+    std::cout << vm->prefixClass(this_name->str());
+
     for (auto me : m.methods) {
         uint16_t i = 1;
         vmConstantUtf8 *mu = static_cast<vmConstantUtf8*>(m.constant_pool[me->name_index]);
@@ -82,7 +84,7 @@ int main(int argc, char **argv)
                     */
                     //vm->execute(code);
                     try {
-                    std::cout << vm->transcompile(mu->str(), code);
+                        std::cout << vm->transcompile(mu->str(), code);
                     }
                     catch (const char *e) {
                         std::cerr << "ERROR: Can't compile: " << e << "\n";
@@ -104,6 +106,8 @@ int main(int argc, char **argv)
             ++i;
         }
     }
+    std::cout << vm->postClass(this_name->str());
+
     (void)preload;
     std::sort(vm->loadstack.begin(), vm->loadstack.end());
     auto last_class = std::unique(vm->loadstack.begin(), vm->loadstack.end());
@@ -119,7 +123,15 @@ int main(int argc, char **argv)
         }
     }
     std::cout << "    try {\n";
-    std::cout << "        class_main();\n";
+    std::vector<std::string> namespaces =vm->parseClassPackage(this_name->str());
+    std::string namespaceStr = "";
+    for (auto ns : namespaces) {
+        if (!namespaceStr.empty()) namespaceStr += "::";
+        namespaceStr += ns;
+    }
+    std::string classname =vm->parseClassName(this_name->str());
+    std::cout << "        " + classname + " main_class;\n";
+    std::cout << "        main_class.class_main();\n";
     std::cout << "    }\n";
     std::cout << "    catch (const char* m) {\n";
     std::cout << "        std::cerr << \"ERROR: \" << m << std::endl;\n";
