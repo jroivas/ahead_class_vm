@@ -5,6 +5,7 @@
 #include <vm.h>
 
 #include <lib/runtime.h>
+#include <vm_object.h>
 /*
 #include <lib/stringbuilder.h>
 #include <lib/printstream.h>
@@ -63,8 +64,7 @@ int main(int argc, char **argv)
         vmConstantUtf8 *type = static_cast<vmConstantUtf8*>(m.constant_pool[f->desc_index]);
         vmConstantUtf8 *name = static_cast<vmConstantUtf8*>(m.constant_pool[f->name_index]);
         if (type && name) {
-            std::cerr << "FF " << type->str() << "\n";
-            std::cerr << "FF " << name->str() << "\n";
+            std::cout << typeToNative(parseType(type->str())) << " " << name->str() << ";\n";
         }
     }
 

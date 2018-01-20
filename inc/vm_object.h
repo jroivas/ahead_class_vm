@@ -53,6 +53,7 @@ class vmClass;
 std::vector<std::string> parseField(std::string);
 std::pair<std::string,std::string> parseParams(std::string);
 std::string typeToNative(std::string val);
+std::string parseType(std::string t);
 
 class FunctionDesc
 {

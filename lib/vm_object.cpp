@@ -61,6 +61,15 @@ std::string formatType(std::string val, uint32_t array)
     return val;
 }
 
+std::string parseType(std::string t)
+{
+    // FIXME expects Ltype;
+    size_t l = t.length();
+    if (l <= 2) return t;
+    if (t[0] != 'L') return t;
+    return t.substr(1, l - 2);
+}
+
 std::string typeToNative(std::string val)
 {
     if (val == "void") return "void";
