@@ -585,13 +585,22 @@ std::string VM::gen_putField()
 {
     uint16_t idx = fetch16();
 
+    std::cerr << " IDX " << idx << "\n";
     vmConstantRef *idxRef = parseRef(idx);
     std::cerr << " IDXREF1 " << idxRef << "\n";
     vmConstantNameAndType *nametype = parseRefNameType(idxRef);
     std::cerr << " IDXREF2 " << nametype << "\n";
     std::cerr << "  NT " << ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() << "\n";
 
-    return "";
+    std::string res = "";
+
+    res += indent() + "{\n";
+    res += indent() + "vmObject *val = stack[stackpos--];\n";
+    res += indent() + "vmObject *obj = stack[stackpos--];\n";
+    res += indent() + "obj->" + ((vmConstantUtf8 *)(nametype->resolve(cl->constant_pool)))->str() + " = val;\n";
+    res += indent() + "}\n";
+
+    return res;
 }
 
 std::string VM::gen_invokeVirtual()
