@@ -11,18 +11,13 @@
 #include <lib/printstream.h>
 */
 
-int main(int argc, char **argv)
+int translateClass(std::string fname)
 {
-    if (argc <= 1) {
-        std::cout << "Usage: " << argv[0] << " classfile\n";
-        return 1;
-    }
-
-    vmClassFile m(argv[1]);
+    vmClassFile m(fname);
 
     bool ok = m.parse();
     if (!ok) {
-        std::cout << "ERROR: Parsing of " << argv[1] << " failed!\n";
+        std::cout << "ERROR: Parsing of " << fname << " failed!\n";
         return 2;
     }
     std::cout << "/*\n";
@@ -97,11 +92,13 @@ int main(int argc, char **argv)
                     }
                     catch (const char *e) {
                         std::cerr << "ERROR: Can't compile: " << e << "\n";
-                        exit(1);
+                        //exit(1);
+                        break;
                     }
                     catch (std::string e) {
                         std::cerr << "ERROR: Can't compile: " << e << "\n";
-                        exit(1);
+                        //exit(1);
+                        break;
                     }
                 } else {
                     //std::cout << i << " " << u->bytes << "\n";
@@ -117,7 +114,6 @@ int main(int argc, char **argv)
     }
     std::cout << vm->postClass(this_name->str());
 
-    (void)preload;
     std::sort(vm->loadstack.begin(), vm->loadstack.end());
     auto last_class = std::unique(vm->loadstack.begin(), vm->loadstack.end());
 
@@ -154,4 +150,29 @@ int main(int argc, char **argv)
     }
 
     return 0;
+}
+
+int main(int argc, char **argv)
+{
+    if (argc <= 1) {
+        std::cout << "Usage: " << argv[0] << " classfile\n";
+        return 1;
+    }
+    int err = 0;
+
+    for (int i = 1; i < argc; ++i) {
+        try {
+            int res = translateClass(argv[i]);
+            if (res != 0) err = res;
+        }
+        catch (std::string e) {
+            std::cerr << "ERROR: " << e << "\n";
+        }
+        catch (const char *e) {
+            std::cerr << "ERROR: " << e << "\n";
+        }
+    }
+
+
+    return err;
 }

@@ -72,7 +72,7 @@ std::string VM::prefixClass(std::string name)
     std::string res = "";
     std::vector<std::string> namespaces = VM::parseClassPackage(name);
     for (auto ns : namespaces) {
-        res += "namespace " + ns + " {\n";
+        res += "namespace " + ns + " {\n";
     }
     res += "class " + parseClassName(name) + "\n{\n";
     res += "public:\n";

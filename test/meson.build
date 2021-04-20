@@ -10,7 +10,10 @@ test_vm = executable('test_class_vm',
     link_with: [
         libclass
     ],
-    link_args: '-lgc'
+    link_args: [
+         '-lgc',
+         '-lgccpp'
+    ]
 )
 
 test('main_test', test_vm)

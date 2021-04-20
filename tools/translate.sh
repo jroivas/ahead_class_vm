@@ -9,4 +9,5 @@ bname=$(basename "${fname}" .class)
 
 ninja
 ./src/ahead_class_vm $@ > "${bname}.cpp"
-g++ -O3 -I../inc -I../lib "${bname}.cpp" -o "${bname}" -Llib -lclass -lgc -ljemalloc
+#g++ -O3 -I../inc -I../lib "${bname}.cpp" -o "${bname}" -Llib -lclass -lgc -ljemalloc
+g++ -O3 -I../inc -I../lib "${bname}.cpp" -o "${bname}" -Llib -lclass -lgc
