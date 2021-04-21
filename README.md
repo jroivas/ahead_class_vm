@@ -40,7 +40,7 @@ Compile it with java compliler:
     cd ../build
 
     # Rebuilds translator and generates C++ code, and compiles it with g++
-    ../tools/translate.sh ../examples/hello.class > hello.cpp
+    ../tools/translate.sh ../examples/hello.class
 
     # Run translated application
     ./hello
